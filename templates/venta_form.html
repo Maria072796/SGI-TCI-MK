@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">Nueva Venta</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" id="ventaForm">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Productos</label>
+                        <div id="productosContainer">
+                            <div class="producto-item mb-3 p-3 border rounded">
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <label class="form-label">Producto</label>
+                                        <select class="form-select producto-select" name="producto_id" required>
+                                            <option value="">Seleccione un producto</option>
+                                            {% for producto in productos %}
+                                                <option value="{{ producto.id }}" 
+                                                        data-precio="{{ producto.precio_venta }}" 
+                                                        data-stock="{{ producto.stock_actual }}">
+                                                    {{ producto.nombre }} - ${{ "%.2f"|format(producto.precio_venta) }} (Stock: {{ producto.stock_actual }})
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <label class="form-label">Cantidad</label>
+                                        <input type="number" class="form-control cantidad-input" name="cantidad" 
+                                               min="1" value="1" required>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <label class="form-label">Subtotal</label>
+                                        <input type="text" class="form-control subtotal-input" readonly 
+                                               value="$0.00">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="agregarProductoBtn">
+                            <i class="bi bi-plus-circle"></i> Agregar Producto
+                        </button>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="observaciones" class="form-label">Observaciones</label>
+                        <textarea class="form-control" id="observaciones" name="observaciones" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title">Total de la Venta</h5>
+                                    <p class="card-text display-4 fw-bold text-primary" id="totalVenta">$0.00</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" name="productos_json" id="productosJson">
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-check-circle"></i> Confirmar Venta
+                        </button>
+                        <a href="{{ url_for('ventas.listar') }}" class="btn btn-secondary btn-lg">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Instrucciones</h5>
+            </div>
+            <div class="card-body">
+                <ol class="list-unstyled">
+                    <li class="mb-2">1. Seleccione un producto de la lista</li>
+                    <li class="mb-2">2. Ingrese la cantidad deseada</li>
+                    <li class="mb-2">3. El subtotal se calcula automáticamente</li>
+                    <li class="mb-2">4. Agregue más productos si es necesario</li>
+                    <li class="mb-2">5. Verifique el total de la venta</li>
+                    <li class="mb-2">6. Confirme la venta</li>
+                </ol>
+                <hr>
+                <p class="text-muted small">
+                    <strong>Nota:</strong> El stock se descontará automáticamente al confirmar la venta.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const productosContainer = document.getElementById('productosContainer');
+    const agregarProductoBtn = document.getElementById('agregarProductoBtn');
+    const ventaForm = document.getElementById('ventaForm');
+    const totalVentaElement = document.getElementById('totalVenta');
+    const productosJsonInput = document.getElementById('productosJson');
+    
+    // Función para calcular subtotal de un producto
+    function calcularSubtotal(productoItem) {
+        const select = productoItem.querySelector('.producto-select');
+        const cantidadInput = productoItem.querySelector('.cantidad-input');
+        const subtotalInput = productoItem.querySelector('.subtotal-input');
+        
+        const selectedOption = select.options[select.selectedIndex];
+        const precio = parseFloat(selectedOption.dataset.precio) || 0;
+        const cantidad = parseInt(cantidadInput.value) || 0;
+        const stock = parseInt(selectedOption.dataset.stock) || 0;
+        
+        // Validar stock
+        if (cantidad > stock) {
+            cantidadInput.setCustomValidity('Cantidad excede stock disponible');
+            cantidadInput.classList.add('is-invalid');
+        } else {
+            cantidadInput.setCustomValidity('');
+            cantidadInput.classList.remove('is-invalid');
+        }
+        
+        const subtotal = precio * cantidad;
+        subtotalInput.value = '$' + subtotal.toFixed(2);
+        
+        return subtotal;
+    }
+    
+    // Función para calcular total de la venta
+    function calcularTotalVenta() {
+        let total = 0;
+        const productoItems = productosContainer.querySelectorAll('.producto-item');
+        
+        productoItems.forEach(item => {
+            total += calcularSubtotal(item);
+        });
+        
+        totalVentaElement.textContent = '$' + total.toFixed(2);
+        return total;
+    }
+    
+    // Función para agregar un nuevo producto
+    function agregarProducto() {
+        const template = document.querySelector('.producto-item');
+        const nuevoProducto = template.cloneNode(true);
+        
+        // Limpiar valores
+        nuevoProducto.querySelector('.producto-select').value = '';
+        nuevoProducto.querySelector('.cantidad-input').value = '1';
+        nuevoProducto.querySelector('.subtotal-input').value = '$0.00';
+        
+        // Agregar botón de eliminar
+        const row = nuevoProducto.querySelector('.row');
+        const col = document.createElement('div');
+        col.className = 'col-md-1 mb-2';
+        col.innerHTML = `
+            <label class="form-label">&nbsp;</label>
+            <button type="button" class="btn btn-outline-danger btn-sm w-100 eliminar-producto">
+                <i class="bi bi-trash"></i>
+            </button>
+        `;
+        row.appendChild(col);
+        
+        productosContainer.appendChild(nuevoProducto);
+        
+        // Agregar event listeners
+        const select = nuevoProducto.querySelector('.producto-select');
+        const cantidadInput = nuevoProducto.querySelector('.cantidad-input');
+        const eliminarBtn = nuevoProducto.querySelector('.eliminar-producto');
+        
+        select.addEventListener('change', calcularTotalVenta);
+        cantidadInput.addEventListener('input', calcularTotalVenta);
+        eliminarBtn.addEventListener('click', function() {
+            if (productosContainer.querySelectorAll('.producto-item').length > 1) {
+                nuevoProducto.remove();
+                calcularTotalVenta();
+            } else {
+                alert('Debe haber al menos un producto en la venta');
+            }
+        });
+    }
+    
+    // Event listeners para el primer producto
+    const primerProducto = productosContainer.querySelector('.producto-item');
+    primerProducto.querySelector('.producto-select').addEventListener('change', calcularTotalVenta);
+    primerProducto.querySelector('.cantidad-input').addEventListener('input', calcularTotalVenta);
+    
+    // Botón para agregar producto
+    agregarProductoBtn.addEventListener('click', agregarProducto);
+    
+    // Preparar datos antes de enviar el formulario
+    ventaForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const productos = [];
+        const productoItems = productosContainer.querySelectorAll('.producto-item');
+        
+        productoItems.forEach(item => {
+            const select = item.querySelector('.producto-select');
+            const cantidadInput = item.querySelector('.cantidad-input');
+            
+            if (select.value) {
+                productos.push({
+                    producto_id: parseInt(select.value),
+                    cantidad: parseInt(cantidadInput.value)
+                });
+            }
+        });
+        
+        if (productos.length === 0) {
+            alert('Debe seleccionar al menos un producto');
+            return;
+        }
+        
+        productosJsonInput.value = JSON.stringify(productos);
+        ventaForm.submit();
+    });
+    
+    // Calcular total inicial
+    calcularTotalVenta();
+});
+</script>
+{% endblock %}
