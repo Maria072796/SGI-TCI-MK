@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">Utilidad Diaria</h2>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <form method="GET" class="d-flex gap-2 align-items-center">
+            <label for="fecha" class="form-label mb-0">Fecha:</label>
+            <input type="date" class="form-control" id="fecha" name="fecha" 
+                   value="{{ fecha.strftime('%Y-%m-%d') }}" style="max-width: 200px;">
+            <button type="submit" class="btn btn-primary">Consultar</button>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Total Ventas</h5>
+                <p class="card-text display-6">${{ "%.2f"|format(total_ventas) }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h5 class="card-title">Total Costos</h5>
+                <p class="card-text display-6">${{ "%.2f"|format(total_costos) }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">Total Egresos</h5>
+                <p class="card-text display-6">${{ "%.2f"|format(total_egresos) }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card text-white {% if utilidad_real >= 0 %}bg-primary{% else %}bg-secondary{% endif %}">
+            <div class="card-body">
+                <h5 class="card-title">Utilidad Real</h5>
+                <p class="card-text display-6">${{ "%.2f"|format(utilidad_real) }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Ventas del Día ({{ ventas|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% if ventas %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Hora</th>
+                                    <th>Vendedor</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for venta in ventas %}
+                                    <tr>
+                                        <td>{{ venta.id }}</td>
+                                        <td>{{ venta.fecha_hora.strftime('%H:%M') }}</td>
+                                        <td>{{ venta.usuario.nombre_completo or venta.usuario.username }}</td>
+                                        <td>${{ "%.2f"|format(venta.total) }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No hay ventas registradas para esta fecha.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Egresos del Día ({{ egresos|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% if egresos %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Hora</th>
+                                    <th>Descripción</th>
+                                    <th>Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for egreso in egresos %}
+                                    <tr>
+                                        <td>{{ egreso.id }}</td>
+                                        <td>{{ egreso.fecha_hora.strftime('%H:%M') }}</td>
+                                        <td>{{ egreso.descripcion }}</td>
+                                        <td>${{ "%.2f"|format(egreso.monto) }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No hay egresos registrados para esta fecha.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+{% endblock %}

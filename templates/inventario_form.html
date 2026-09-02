@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            {% if action == 'crear' %}Crear Nuevo Producto{% else %}Editar Producto{% endif %}
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre del Producto *</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" 
+                               value="{{ producto.nombre if producto else '' }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" rows="3">{{ producto.descripcion if producto else '' }}</textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="precio_costo" class="form-label">Precio de Costo *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="precio_costo" name="precio_costo" 
+                                       step="0.01" min="0" value="{{ producto.precio_costo if producto else '' }}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="precio_venta" class="form-label">Precio de Venta *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="precio_venta" name="precio_venta" 
+                                       step="0.01" min="0" value="{{ producto.precio_venta if producto else '' }}" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="stock_actual" class="form-label">Stock Actual</label>
+                            <input type="number" class="form-control" id="stock_actual" name="stock_actual" 
+                                   min="0" value="{{ producto.stock_actual if producto else 0 }}">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="stock_minimo" class="form-label">Stock Mínimo</label>
+                            <input type="number" class="form-control" id="stock_minimo" name="stock_minimo" 
+                                   min="0" value="{{ producto.stock_minimo if producto else 0 }}">
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            {% if action == 'crear' %}Crear Producto{% else %}Actualizar Producto{% endif %}
+                        </button>
+                        <a href="{{ url_for('inventario.listar') }}" class="btn btn-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Información</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <strong>Nombre:</strong> Campo obligatorio que identifica el producto.
+                    </li>
+                    <li class="mb-2">
+                        <strong>Descripción:</strong> Detalles adicionales sobre el producto (opcional).
+                    </li>
+                    <li class="mb-2">
+                        <strong>Precio de Costo:</strong> Precio al que se adquiere el producto.
+                    </li>
+                    <li class="mb-2">
+                        <strong>Precio de Venta:</strong> Precio al que se vende el producto.
+                    </li>
+                    <li class="mb-2">
+                        <strong>Stock Actual:</strong> Cantidad disponible en inventario.
+                    </li>
+                    <li class="mb-2">
+                        <strong>Stock Mínimo:</strong> Nivel mínimo de stock para alertas.
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const precioCosto = document.getElementById('precio_costo');
+    const precioVenta = document.getElementById('precio_venta');
+    
+    // Validar que precio de venta sea mayor al costo
+    function validarPrecios() {
+        if (precioCosto.value && precioVenta.value) {
+            const costo = parseFloat(precioCosto.value);
+            const venta = parseFloat(precioVenta.value);
+            
+            if (venta <= costo) {
+                precioVenta.setCustomValidity('El precio de venta debe ser mayor al precio de costo');
+            } else {
+                precioVenta.setCustomValidity('');
+            }
+        }
+    }
+    
+    precioCosto.addEventListener('input', validarPrecios);
+    precioVenta.addEventListener('input', validarPrecios);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            {% if action == 'crear' %}Crear Nuevo Usuario{% else %}Editar Usuario{% endif %}
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Nombre de Usuario *</label>
+                        <input type="text" class="form-control" id="username" name="username" 
+                               value="{{ usuario.username if usuario else '' }}" 
+                               {% if action == 'editar' %}readonly{% endif %} required>
+                        {% if action == 'editar' %}
+                        <small class="text-muted">El nombre de usuario no se puede modificar.</small>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="nombre_completo" class="form-label">Nombre Completo</label>
+                        <input type="text" class="form-control" id="nombre_completo" name="nombre_completo" 
+                               value="{{ usuario.nombre_completo if usuario else '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="rol" class="form-label">Rol *</label>
+                        <select class="form-select" id="rol" name="rol" required>
+                            <option value="">Seleccione un rol</option>
+                            <option value="administrador" {% if usuario and usuario.rol == 'administrador' %}selected{% endif %}>Administrador</option>
+                            <option value="vendedor" {% if usuario and usuario.rol == 'vendedor' %}selected{% endif %}>Vendedor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">
+                            Contraseña {% if action == 'editar' %}(dejar en blanco para mantener la actual){% else %}*{% endif %}
+                        </label>
+                        <input type="password" class="form-control" id="password" name="password" 
+                               {% if action == 'crear' %}required{% endif %}>
+                    </div>
+                    
+                    {% if action == 'editar' %}
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="activo" name="activo" 
+                               {% if usuario and usuario.activo %}checked{% endif %}>
+                        <label class="form-check-label" for="activo">
+                            Usuario Activo
+                        </label>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            {% if action == 'crear' %}Crear Usuario{% else %}Actualizar Usuario{% endif %}
+                        </button>
+                        <a href="{{ url_for('auth.listar_usuarios') }}" class="btn btn-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Información de Roles</h5>
+            </div>
+            <div class="card-body">
+                <h6>Administrador:</h6>
+                <ul class="list-unstyled mb-3">
+                    <li>✓ Gestión completa de inventario</li>
+                    <li>✓ Gestión de egresos</li>
+                    <li>✓ Todos los reportes financieros</li>
+                    <li>✓ Cierre de caja</li>
+                    <li>✓ Gestión de usuarios</li>
+                </ul>
+                
+                <h6>Vendedor:</h6>
+                <ul class="list-unstyled">
+                    <li>✓ Registro de ventas</li>
+                    <li>✓ Consulta de ventas propias</li>
+                    <li>✓ Anulación de ventas propias</li>
+                    <li>✓ Cierre de caja de turno</li>
+                    <li>✗ No puede gestionar inventario</li>
+                    <li>✗ No puede gestionar egresos</li>
+                    <li>✗ No puede ver reportes financieros</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+{% endblock %}
