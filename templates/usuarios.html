@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Gestión de Usuarios</h2>
+            <a href="{{ url_for('auth.crear_usuario') }}" class="btn btn-primary">
+                <i class="bi bi-person-plus"></i> Nuevo Usuario
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                {% if usuarios %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Usuario</th>
+                                    <th>Nombre Completo</th>
+                                    <th>Rol</th>
+                                    <th>Estado</th>
+                                    <th>Fecha Creación</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for usuario in usuarios %}
+                                    <tr>
+                                        <td>{{ usuario.id }}</td>
+                                        <td>{{ usuario.username }}</td>
+                                        <td>{{ usuario.nombre_completo or '-' }}</td>
+                                        <td>
+                                            <span class="badge {% if usuario.rol == 'administrador' %}bg-danger{% else %}bg-success{% endif %}">
+                                                {{ usuario.rol|capitalize }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if usuario.activo %}bg-success{% else %}bg-secondary{% endif %}">
+                                                {% if usuario.activo %}Activo{% else %}Inactivo{% endif %}
+                                            </span>
+                                        </td>
+                                        <td>{{ usuario.fecha_creacion.strftime('%d/%m/%Y') if usuario.fecha_creacion else '-' }}</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('auth.editar_usuario', id=usuario.id) }}" class="btn btn-outline-primary">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                {% if usuario.id != current_user.id %}
+                                                    <form action="{{ url_for('auth.eliminar_usuario', id=usuario.id) }}" method="POST" class="d-inline">
+                                                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('¿Está seguro de eliminar este usuario?')">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <p class="text-muted">No hay usuarios registrados.</p>
+                        <a href="{{ url_for('auth.crear_usuario') }}" class="btn btn-primary">Crear Primer Usuario</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+{% endblock %}

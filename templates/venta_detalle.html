@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Detalle de Venta #{{ venta.id }}</h2>
+            <a href="{{ url_for('ventas.listar') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Volver a Ventas
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Información de la Venta</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <strong>ID:</strong> {{ venta.id }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>Fecha/Hora:</strong> {{ venta.fecha_hora.strftime('%d/%m/%Y %H:%M:%S') }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>Vendedor:</strong> {{ venta.usuario.nombre_completo or venta.usuario.username }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>Estado:</strong> 
+                        <span class="badge {% if venta.estado == 'confirmada' %}bg-success{% else %}bg-danger{% endif %}">
+                            {{ venta.estado|capitalize }}
+                        </span>
+                    </div>
+                    {% if venta.observaciones %}
+                        <div class="col-12 mb-3">
+                            <strong>Observaciones:</strong> {{ venta.observaciones }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Productos de la Venta</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Precio Unitario</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detalle in venta.detalles %}
+                                <tr>
+                                    <td>{{ detalle.producto.nombre }}</td>
+                                    <td>{{ detalle.cantidad }}</td>
+                                    <td>${{ "%.2f"|format(detalle.precio_unitario) }}</td>
+                                    <td>${{ "%.2f"|format(detalle.subtotal) }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold">Total:</td>
+                                <td class="fw-bold">${{ "%.2f"|format(venta.total) }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Resumen</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Total de la Venta:</strong>
+                    <p class="display-4 text-primary fw-bold">${{ "%.2f"|format(venta.total) }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Cantidad de Productos:</strong>
+                    <p>{{ venta.detalles|length }}</p>
+                </div>
+                
+                {% if venta.estado == 'confirmada' %}
+                    {% if current_user.rol == 'administrador' or venta.usuario_id == current_user.id %}
+                        <hr>
+                        <form action="{{ url_for('ventas.anular', id=venta.id) }}" method="POST">
+                            <button type="submit" class="btn btn-danger w-100" onclick="return confirm('¿Está seguro de anular esta venta? El stock será revertido.')">
+                                <i class="bi bi-x-circle"></i> Anular Venta
+                            </button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+{% endblock %}
