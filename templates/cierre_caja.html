@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">Cierre de Caja</h2>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <form method="POST">
+            <div class="row align-items-end">
+                <div class="col-md-3">
+                    <label for="fecha" class="form-label">Fecha de Cierre</label>
+                    <input type="date" class="form-control" id="fecha" name="fecha" 
+                           value="{{ fecha.strftime('%Y-%m-%d') }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="observaciones" class="form-label">Observaciones</label>
+                    <input type="text" class="form-control" id="observaciones" name="observaciones" 
+                           placeholder="Notas sobre el cierre de caja">
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">Realizar Cierre</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Total Ventas</h5>
+                <p class="card-text display-6">${{ "%.2f"|format(total_ventas) }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h5 class="card-title">Total Costos</h5>
+                <p class="card-text display-6">${{ "%.2f"|format(total_costos) }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">Total Egresos</h5>
+                <p class="card-text display-6">${{ "%.2f"|format(total_egresos) }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card text-white {% if utilidad_real >= 0 %}bg-primary{% else %}bg-secondary{% endif %}">
+            <div class="card-body">
+                <h5 class="card-title">Utilidad Real</h5>
+                <p class="card-text display-6">${{ "%.2f"|format(utilidad_real) }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Resumen del Cierre</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-bordered">
+                            <tr>
+                                <td><strong>Total Ventas:</strong></td>
+                                <td class="text-end">${{ "%.2f"|format(total_ventas) }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Costos de Productos:</strong></td>
+                                <td class="text-end">${{ "%.2f"|format(total_costos) }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Egresos:</strong></td>
+                                <td class="text-end">${{ "%.2f"|format(total_egresos) }}</td>
+                            </tr>
+                            <tr class="table-primary">
+                                <td><strong>Utilidad Real:</strong></td>
+                                <td class="text-end fw-bold">${{ "%.2f"|format(utilidad_real) }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="alert alert-info">
+                            <h5 class="alert-heading">Información</h5>
+                            <p class="mb-0">
+                                Este cierre de caja registrará los totales calculados para el día {{ fecha.strftime('%d/%m/%Y') }}.
+                                Una vez realizado, no se podrán modificar las ventas y egresos de esta fecha en el cierre.
+                            </p>
+                        </div>
+                        <a href="{{ url_for('reportes.utilidad_diaria', fecha=fecha.strftime('%Y-%m-%d')) }}" class="btn btn-outline-info">
+                            Ver Detalle Utilidad Diaria
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+{% endblock %}
