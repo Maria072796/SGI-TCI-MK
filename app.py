@@ -1,8 +1,9 @@
-from flask import Flask
-from flask_login import LoginManager
+from flask import Flask, request, session
+from flask_login import LoginManager, current_user
 from dotenv import load_dotenv
 import os
 from models import db, Usuario
+from utils.seguridad import password_vencida, password_pronto_vencer
 
 load_dotenv()
 
@@ -39,6 +40,10 @@ def create_app():
     def load_user(user_id):
         return Usuario.query.get(int(user_id))
     
+    # Registrar filtros Jinja personalizados
+    from utils.formato import registrar_filtros_jinja
+    registrar_filtros_jinja(app)
+    
     # Registrar blueprints
     from routes.auth_routes import auth_bp
     from routes.inventario_routes import inventario_bp
@@ -55,7 +60,6 @@ def create_app():
     # Decorador para verificar roles
     from functools import wraps
     from flask import abort, flash, redirect, url_for
-    from flask_login import current_user
     
     def requiere_rol(rol_requerido):
         def decorator(f):
@@ -73,9 +77,37 @@ def create_app():
     # Hacer el decorador disponible globalmente
     app.requiere_rol = requiere_rol
     
+    # Before request para validar contraseña vencida
+    @app.before_request
+    def verificar_password_vencida():
+        # Permitir rutas públicas y de cambio de contraseña
+        rutas_permitidas = ['auth.login', 'auth.logout', 'auth.cambiar_password', 'static']
+        
+        if current_user.is_authenticated:
+            endpoint = request.endpoint
+            if endpoint and not any(permitida in endpoint for permitida in rutas_permitidas):
+                # Verificar si debe cambiar contraseña
+                if current_user.debe_cambiar_password:
+                    flash('Debes cambiar tu contraseña antes de continuar.', 'warning')
+                    return redirect(url_for('auth.cambiar_password'))
+                
+                # Verificar si la contraseña está vencida
+                vencida, dias_restantes = password_vencida(current_user)
+                if vencida:
+                    flash('Tu contraseña ha vencido. Debes cambiarla para continuar.', 'warning')
+                    return redirect(url_for('auth.cambiar_password'))
+                
+                # Verificar si la contraseña está próxima a vencer (mostrar aviso en dashboard)
+                pronto_vencer, dias = password_pronto_vencer(current_user)
+                if pronto_vencer and endpoint == 'auth.dashboard':
+                    flash(f'Tu contraseña vence en {dias} días. Te recomendamos cambiarla pronto.', 'warning')
+    
     return app
 
 app = create_app()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Leer puerto desde variable de entorno (Railway) o usar 5000 localmente
+    port = int(os.getenv('PORT', 5000))
+    debug = os.getenv('FLASK_DEBUG', 'True').lower() == 'true'
+    app.run(debug=debug, host='0.0.0.0', port=port)

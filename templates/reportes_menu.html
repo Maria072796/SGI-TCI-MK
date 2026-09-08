@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Reportes - SGI-TCI MK{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('auth.dashboard') }}">Inicio</a></li>
+            <li class="breadcrumb-item active">Reportes</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Reportes Financieros</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="display-4 mb-3">📊</div>
+                    <h4 class="card-title">Utilidad Diaria</h4>
+                    <p class="card-text text-aux">Calcula la utilidad real de un día específica: ventas menos costos de productos y gastos.</p>
+                    <a href="{{ url_for('reportes.utilidad_diaria') }}" class="btn btn-primary mt-3">Ver Utilidad Diaria</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="display-4 mb-3">💰</div>
+                    <h4 class="card-title">Cierre de Caja</h4>
+                    <p class="card-text text-aux">Realiza el cierre de caja del día con el resumen completo de ventas, gastos y utilidad.</p>
+                    <a href="{{ url_for('reportes.cierre_caja') }}" class="btn btn-primary mt-3">Realizar Cierre</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="display-4 mb-3">📋</div>
+                    <h4 class="card-title">Historial de Cierres</h4>
+                    <p class="card-text text-aux">Consulta todos los cierres de caja realizados con su información detallada.</p>
+                    <a href="{{ url_for('reportes.historial_cierres') }}" class="btn btn-primary mt-3">Ver Historial</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="display-4 mb-3">📈</div>
+                    <h4 class="card-title">Reporte Financiero</h4>
+                    <p class="card-text text-aux">Genera reportes financieros por período personalizado para análisis completos.</p>
+                    <a href="{{ url_for('reportes.reporte_financiero') }}" class="btn btn-primary mt-3">Generar Reporte</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

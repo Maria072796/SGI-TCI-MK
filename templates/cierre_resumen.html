@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Resumen de Cierre - SGI-TCI MK{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('auth.dashboard') }}">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('reportes.cierre_caja') }}">Cierre de Caja</a></li>
+            <li class="breadcrumb-item active">Resumen</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Resumen de Cierre de Caja</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>Fecha:</strong> {{ cierre.fecha|fecha_corta }}</p>
+                            <p><strong>Hora:</strong> {{ cierre.fecha_hora_cierre|fecha_hora }}</p>
+                            <p><strong>Usuario:</strong> {{ cierre.usuario.nombre_completo or cierre.usuario.username }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Tipo:</strong> 
+                                {% if cierre.tipo == 'turno' %}
+                                    <span class="etiqueta-turno">Cierre de Turno</span>
+                                {% else %}
+                                    <span class="etiqueta-dia">Cierre del Día</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p class="h5">Total de Ventas</p>
+                            <p class="total-mk">${{ cierre.total_ventas|moneda }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="h5">Total de Costos</p>
+                            <p class="total-mk">${{ cierre.total_costos|moneda }}</p>
+                        </div>
+                    </div>
+
+                    {% if cierre.tipo == 'dia' %}
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p class="h5">Total de Gastos</p>
+                            <p class="total-mk">${{ cierre.total_egresos|moneda }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="h5">Utilidad Real</p>
+                            <p class="total-mk">${{ cierre.utilidad_real|moneda }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if cierre.observaciones %}
+                    <div class="mb-4">
+                        <p><strong>Observaciones:</strong></p>
+                        <p>{{ cierre.observaciones }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="alert alert-info">
+                        <small>
+                            <strong>Fórmula de Utilidad Real:</strong> Ventas − Costo de productos − Gastos
+                        </small>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button onclick="window.print()" class="btn btn-primary btn-lg">🖨️ Imprimir</button>
+                        <a href="{{ url_for('auth.dashboard') }}" class="btn btn-secondary btn-lg">Volver al Inicio</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .breadcrumb, .btn, .navbar, .footer {
+        display: none !important;
+    }
+    .card {
+        border: 1px solid #000;
+        box-shadow: none;
+    }
+    .card-header {
+        background-color: #fff !important;
+        color: #000 !important;
+        border-bottom: 1px solid #000;
+    }
+    body {
+        background-color: #fff;
+    }
+}
+</style>
+{% endblock %}

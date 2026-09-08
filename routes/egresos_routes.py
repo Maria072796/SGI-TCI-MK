@@ -4,23 +4,24 @@ from models import db, Egreso
 from datetime import datetime
 from decimal import Decimal
 
-egresos_bp = Blueprint('egresos', __name__, url_prefix='/egresos')
+egresos_bp = Blueprint('egresos', __name__, url_prefix='/gastos')
 
 @egresos_bp.route('/')
 @login_required
 def listar():
     if current_user.rol != 'administrador':
-        flash('No tienes permiso para acceder a los egresos.', 'danger')
+        flash('No tienes permiso para acceder a los gastos.', 'danger')
         return redirect(url_for('auth.dashboard'))
     
-    egresos = Egreso.query.order_by(Egreso.fecha_hora.desc()).all()
+    # RN-07: Solo mostrar egresos activos
+    egresos = Egreso.query.filter_by(activo=True).order_by(Egreso.fecha_hora.desc()).all()
     return render_template('egresos.html', egresos=egresos)
 
 @egresos_bp.route('/crear', methods=['GET', 'POST'])
 @login_required
-def crear():
+def crear_egreso():
     if current_user.rol != 'administrador':
-        flash('No tienes permiso para registrar egresos.', 'danger')
+        flash('No tienes permiso para registrar gastos.', 'danger')
         return redirect(url_for('auth.dashboard'))
     
     if request.method == 'POST':
@@ -43,27 +44,28 @@ def crear():
                 monto=monto,
                 categoria=categoria,
                 observaciones=observaciones,
-                usuario_id=current_user.id
+                usuario_id=current_user.id,
+                activo=True
             )
             
             db.session.add(egreso)
             db.session.commit()
             
-            flash('Egreso registrado exitosamente.', 'success')
+            flash('Gasto registrado exitosamente.', 'success')
             return redirect(url_for('egresos.listar'))
             
         except Exception as e:
             db.session.rollback()
-            flash(f'Error al registrar el egreso: {str(e)}', 'danger')
+            flash(f'Error al registrar el gasto: {str(e)}', 'danger')
             return render_template('egreso_form.html', action='crear')
     
     return render_template('egreso_form.html', action='crear')
 
 @egresos_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
-def editar(id):
+def editar_egreso(id):
     if current_user.rol != 'administrador':
-        flash('No tienes permiso para editar egresos.', 'danger')
+        flash('No tienes permiso para editar gastos.', 'danger')
         return redirect(url_for('auth.dashboard'))
     
     egreso = Egreso.query.get_or_404(id)
@@ -84,31 +86,32 @@ def editar(id):
                 return render_template('egreso_form.html', egreso=egreso, action='editar')
             
             db.session.commit()
-            flash('Egreso actualizado exitosamente.', 'success')
+            flash('Gasto actualizado exitosamente.', 'success')
             return redirect(url_for('egresos.listar'))
             
         except Exception as e:
             db.session.rollback()
-            flash(f'Error al actualizar el egreso: {str(e)}', 'danger')
+            flash(f'Error al actualizar el gasto: {str(e)}', 'danger')
             return render_template('egreso_form.html', egreso=egreso, action='editar')
     
     return render_template('egreso_form.html', egreso=egreso, action='editar')
 
 @egresos_bp.route('/eliminar/<int:id>', methods=['POST'])
 @login_required
-def eliminar(id):
+def eliminar_egreso(id):
     if current_user.rol != 'administrador':
-        flash('No tienes permiso para eliminar egresos.', 'danger')
+        flash('No tienes permiso para eliminar gastos.', 'danger')
         return redirect(url_for('auth.dashboard'))
     
     egreso = Egreso.query.get_or_404(id)
     
     try:
-        db.session.delete(egreso)
+        # RN-07: Eliminación lógica en lugar de física
+        egreso.activo = False
         db.session.commit()
-        flash('Egreso eliminado exitosamente.', 'success')
+        flash('Gasto eliminado exitosamente.', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error al eliminar el egreso: {str(e)}', 'danger')
+        flash(f'Error al eliminar el gasto: {str(e)}', 'danger')
     
     return redirect(url_for('egresos.listar'))
