@@ -15,11 +15,16 @@ class Usuario(UserMixin, db.Model):
     nombre_completo = db.Column(db.String(100))
     activo = db.Column(db.Boolean, default=True)
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
+    fecha_cambio_password = db.Column(db.DateTime, default=datetime.utcnow)  # [NUEVO]
+    debe_cambiar_password = db.Column(db.Boolean, default=False)  # [NUEVO]
     
-    ventas = db.relationship('Venta', backref='usuario', lazy=True)
+    ventas = db.relationship('Venta', foreign_keys='Venta.usuario_id', backref='usuario', lazy=True)
+    anulaciones = db.relationship('Venta', foreign_keys='Venta.anulada_por', backref='anulador', lazy=True)
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
+        self.fecha_cambio_password = datetime.utcnow()
+        self.debe_cambiar_password = False
     
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
@@ -55,6 +60,9 @@ class Venta(db.Model):
     estado = db.Column(db.String(20), default='confirmada')  # 'confirmada' or 'anulada'
     total = db.Column(db.Numeric(10, 2), nullable=False)
     observaciones = db.Column(db.Text)
+    fecha_anulacion = db.Column(db.DateTime)  # [NUEVO]
+    anulada_por = db.Column(db.Integer, db.ForeignKey('usuario.id'))  # [NUEVO]
+    motivo_anulacion = db.Column(db.Text)  # [NUEVO]
     
     detalles = db.relationship('DetalleVenta', backref='venta', lazy=True, cascade='all, delete-orphan')
     
@@ -69,6 +77,7 @@ class DetalleVenta(db.Model):
     producto_id = db.Column(db.Integer, db.ForeignKey('producto.id'), nullable=False)
     cantidad = db.Column(db.Integer, nullable=False)
     precio_unitario = db.Column(db.Numeric(10, 2), nullable=False)
+    costo_unitario = db.Column(db.Numeric(10, 2), nullable=False)  # [NUEVO] Costo al momento de la venta
     subtotal = db.Column(db.Numeric(10, 2), nullable=False)
     
     def __repr__(self):
@@ -84,6 +93,7 @@ class Egreso(db.Model):
     fecha_hora = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
     observaciones = db.Column(db.Text)
+    activo = db.Column(db.Boolean, default=True)  # [NUEVO] Para eliminación lógica
     
     usuario = db.relationship('Usuario', backref='egresos')
     
@@ -102,6 +112,8 @@ class CierreCaja(db.Model):
     utilidad_real = db.Column(db.Numeric(10, 2), nullable=False)
     fecha_hora_cierre = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     observaciones = db.Column(db.Text)
+    tipo = db.Column(db.String(10), default='dia')  # 'turno' or 'dia'
+    cantidad_ventas = db.Column(db.Integer, default=0)  # [NUEVO]
     
     usuario = db.relationship('Usuario', backref='cierres_caja')
     

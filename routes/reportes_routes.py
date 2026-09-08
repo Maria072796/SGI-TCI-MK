@@ -7,6 +7,16 @@ from sqlalchemy import func
 
 reportes_bp = Blueprint('reportes', __name__, url_prefix='/reportes')
 
+# Pantalla intermedia de reportes
+@reportes_bp.route('/')
+@login_required
+def reportes_menu():
+    if current_user.rol != 'administrador':
+        flash('No tienes permiso para ver reportes.', 'danger')
+        return redirect(url_for('auth.dashboard'))
+    
+    return render_template('reportes_menu.html')
+
 @reportes_bp.route('/utilidad-diaria')
 @login_required
 def utilidad_diaria():
@@ -58,46 +68,88 @@ def utilidad_diaria():
 @reportes_bp.route('/cierre-caja', methods=['GET', 'POST'])
 @login_required
 def cierre_caja():
+    fecha_str = request.args.get('fecha')
+    if fecha_str:
+        fecha = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+    else:
+        fecha = date.today()
+    
     if request.method == 'POST':
-        fecha_str = request.form.get('fecha')
         observaciones = request.form.get('observaciones')
         
-        if fecha_str:
-            fecha = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+        if current_user.rol == 'vendedor':
+            # Cierre de turno del vendedor
+            tipo = 'turno'
+            
+            # Verificar si ya existe cierre de turno del vendedor para esta fecha
+            cierre_existente = CierreCaja.query.filter_by(
+                fecha=fecha, 
+                usuario_id=current_user.id, 
+                tipo='turno'
+            ).first()
+            if cierre_existente:
+                flash('Ya has realizado el cierre de tu turno para hoy.', 'warning')
+                return redirect(url_for('reportes.cierre_caja'))
+            
+            # Calcular ventas del vendedor en el día
+            ventas_dia = Venta.query.filter(
+                Venta.estado == 'confirmada',
+                Venta.usuario_id == current_user.id,
+                func.date(Venta.fecha_hora) == fecha
+            ).all()
+            
+            total_ventas = sum(v.total for v in ventas_dia)
+            
+            # Calcular costos de productos vendidos
+            total_costos = Decimal('0')
+            for venta in ventas_dia:
+                for detalle in venta.detalles:
+                    producto = Producto.query.get(detalle.producto_id)
+                    if producto:
+                        total_costos += producto.precio_costo * detalle.cantidad
+            
+            # Para el vendedor, egresos y utilidad no se calculan
+            total_egresos = Decimal('0')
+            utilidad_real = Decimal('0')
+            
         else:
-            fecha = date.today()
-        
-        # Verificar si ya existe cierre para esta fecha
-        cierre_existente = CierreCaja.query.filter_by(fecha=fecha).first()
-        if cierre_existente:
-            flash('Ya existe un cierre de caja para esta fecha.', 'warning')
-            return redirect(url_for('reportes.cierre_caja'))
-        
-        # Calcular totales
-        ventas_dia = Venta.query.filter(
-            Venta.estado == 'confirmada',
-            func.date(Venta.fecha_hora) == fecha
-        ).all()
-        
-        total_ventas = sum(v.total for v in ventas_dia)
-        
-        # Calcular costos de productos vendidos
-        total_costos = Decimal('0')
-        for venta in ventas_dia:
-            for detalle in venta.detalles:
-                producto = Producto.query.get(detalle.producto_id)
-                if producto:
-                    total_costos += producto.precio_costo * detalle.cantidad
-        
-        # Calcular egresos del día
-        egresos_dia = Egreso.query.filter(
-            func.date(Egreso.fecha_hora) == fecha
-        ).all()
-        
-        total_egresos = sum(e.monto for e in egresos_dia)
-        
-        # Calcular utilidad real
-        utilidad_real = total_ventas - total_costos - total_egresos
+            # Cierre del día del administrador
+            tipo = 'dia'
+            
+            # Verificar si ya existe cierre del día para esta fecha
+            cierre_existente = CierreCaja.query.filter_by(
+                fecha=fecha, 
+                tipo='dia'
+            ).first()
+            if cierre_existente:
+                flash('Ya existe un cierre del día para esta fecha.', 'warning')
+                return redirect(url_for('reportes.cierre_caja'))
+            
+            # Calcular ventas del día
+            ventas_dia = Venta.query.filter(
+                Venta.estado == 'confirmada',
+                func.date(Venta.fecha_hora) == fecha
+            ).all()
+            
+            total_ventas = sum(v.total for v in ventas_dia)
+            
+            # Calcular costos de productos vendidos
+            total_costos = Decimal('0')
+            for venta in ventas_dia:
+                for detalle in venta.detalles:
+                    producto = Producto.query.get(detalle.producto_id)
+                    if producto:
+                        total_costos += producto.precio_costo * detalle.cantidad
+            
+            # Calcular egresos del día
+            egresos_dia = Egreso.query.filter(
+                func.date(Egreso.fecha_hora) == fecha
+            ).all()
+            
+            total_egresos = sum(e.monto for e in egresos_dia)
+            
+            # Calcular utilidad real
+            utilidad_real = total_ventas - total_costos - total_egresos
         
         # Crear cierre de caja
         cierre = CierreCaja(
@@ -107,52 +159,92 @@ def cierre_caja():
             total_egresos=total_egresos,
             total_costos=total_costos,
             utilidad_real=utilidad_real,
-            observaciones=observaciones
+            observaciones=observaciones,
+            tipo=tipo
         )
         
         try:
             db.session.add(cierre)
             db.session.commit()
             flash('Cierre de caja realizado exitosamente.', 'success')
-            return redirect(url_for('reportes.historial_cierres'))
+            return redirect(url_for('reportes.cierre_resumen', cierre_id=cierre.id))
         except Exception as e:
             db.session.rollback()
             flash(f'Error al realizar el cierre de caja: {str(e)}', 'danger')
     
-    fecha_str = request.args.get('fecha')
-    if fecha_str:
-        fecha = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+    # Calcular datos preliminares según rol
+    if current_user.rol == 'vendedor':
+        # Solo ventas del vendedor
+        ventas_dia = Venta.query.filter(
+            Venta.estado == 'confirmada',
+            Venta.usuario_id == current_user.id,
+            func.date(Venta.fecha_hora) == fecha
+        ).all()
+        
+        total_ventas = sum(v.total for v in ventas_dia)
+        
+        total_costos = Decimal('0')
+        for venta in ventas_dia:
+            for detalle in venta.detalles:
+                producto = Producto.query.get(detalle.producto_id)
+                if producto:
+                    total_costos += producto.precio_costo * detalle.cantidad
+        
+        # Para el vendedor no se muestran egresos ni utilidad
+        total_egresos = Decimal('0')
+        utilidad_real = Decimal('0')
+        mostrar_egresos = False
     else:
-        fecha = date.today()
+        # Todas las ventas y egresos del día
+        ventas_dia = Venta.query.filter(
+            Venta.estado == 'confirmada',
+            func.date(Venta.fecha_hora) == fecha
+        ).all()
+        
+        total_ventas = sum(v.total for v in ventas_dia)
+        
+        total_costos = Decimal('0')
+        for venta in ventas_dia:
+            for detalle in venta.detalles:
+                producto = Producto.query.get(detalle.producto_id)
+                if producto:
+                    total_costos += producto.precio_costo * detalle.cantidad
+        
+        egresos_dia = Egreso.query.filter(
+            func.date(Egreso.fecha_hora) == fecha
+        ).all()
+        
+        total_egresos = sum(e.monto for e in egresos_dia)
+        utilidad_real = total_ventas - total_costos - total_egresos
+        mostrar_egresos = True
     
-    # Calcular datos preliminares para mostrar
-    ventas_dia = Venta.query.filter(
-        Venta.estado == 'confirmada',
-        func.date(Venta.fecha_hora) == fecha
-    ).all()
-    
-    total_ventas = sum(v.total for v in ventas_dia)
-    
-    total_costos = Decimal('0')
-    for venta in ventas_dia:
-        for detalle in venta.detalles:
-            producto = Producto.query.get(detalle.producto_id)
-            if producto:
-                total_costos += producto.precio_costo * detalle.cantidad
-    
-    egresos_dia = Egreso.query.filter(
-        func.date(Egreso.fecha_hora) == fecha
-    ).all()
-    
-    total_egresos = sum(e.monto for e in egresos_dia)
-    utilidad_real = total_ventas - total_costos - total_egresos
+    # Verificar si ya existe cierre para esta fecha y usuario
+    cierre_existente = CierreCaja.query.filter_by(
+        fecha=fecha, 
+        usuario_id=current_user.id
+    ).first()
     
     return render_template('cierre_caja.html',
                           fecha=fecha,
                           total_ventas=total_ventas,
                           total_costos=total_costos,
                           total_egresos=total_egresos,
-                          utilidad_real=utilidad_real)
+                          utilidad_real=utilidad_real,
+                          mostrar_egresos=mostrar_egresos,
+                          cierre_existente=cierre_existente)
+
+# Resumen de cierre de caja (para impresión)
+@reportes_bp.route('/cierre-resumen/<int:cierre_id>')
+@login_required
+def cierre_resumen(cierre_id):
+    cierre = CierreCaja.query.get_or_404(cierre_id)
+    
+    # Verificar permisos: vendedor solo puede ver sus propios cierres
+    if current_user.rol == 'vendedor' and cierre.usuario_id != current_user.id:
+        flash('No tienes permiso para ver este cierre.', 'danger')
+        return redirect(url_for('auth.dashboard'))
+    
+    return render_template('cierre_resumen.html', cierre=cierre)
 
 @reportes_bp.route('/historial-cierres')
 @login_required

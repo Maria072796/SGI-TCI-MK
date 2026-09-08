@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from models import db, Usuario
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy import func
+from utils.seguridad import validar_password, password_vencida, password_pronto_vencer
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -53,28 +54,47 @@ def dashboard():
     from models import Producto, Venta
     from sqlalchemy import func
     
-    # Estadísticas básicas
-    total_productos = Producto.query.filter_by(activo=True).count()
-    productos_bajo_stock = Producto.query.filter(
-        Producto.activo == True,
-        Producto.stock_actual <= Producto.stock_minimo
-    ).count()
-    
-    ventas_hoy = Venta.query.filter(
-        Venta.estado == 'confirmada',
-        func.date(Venta.fecha_hora) == datetime.utcnow().date()
-    ).count()
-    
-    # Total de usuarios por rol
-    total_admins = Usuario.query.filter_by(rol='administrador', activo=True).count()
-    total_vendedores = Usuario.query.filter_by(rol='vendedor', activo=True).count()
-    
-    return render_template('dashboard.html', 
-                          total_productos=total_productos,
-                          productos_bajo_stock=productos_bajo_stock,
-                          ventas_hoy=ventas_hoy,
-                          total_admins=total_admins,
-                          total_vendedores=total_vendedores)
+    # Estadísticas según rol
+    if current_user.rol == 'vendedor':
+        # Vendedor: solo sus ventas del día
+        ventas_hoy = Venta.query.filter(
+            Venta.estado == 'confirmada',
+            Venta.usuario_id == current_user.id,
+            func.date(Venta.fecha_hora) == datetime.utcnow().date()
+        ).count()
+        
+        total_vendido_hoy = db.session.query(func.sum(Venta.total)).filter(
+            Venta.estado == 'confirmada',
+            Venta.usuario_id == current_user.id,
+            func.date(Venta.fecha_hora) == datetime.utcnow().date()
+        ).scalar() or 0
+        
+        return render_template('dashboard.html', 
+                              ventas_hoy=ventas_hoy,
+                              total_vendido_hoy=total_vendido_hoy)
+    else:
+        # Administrador: estadísticas completas
+        total_productos = Producto.query.filter_by(activo=True).count()
+        productos_bajo_stock = Producto.query.filter(
+            Producto.activo == True,
+            Producto.stock_actual <= Producto.stock_minimo
+        ).count()
+        
+        ventas_hoy = Venta.query.filter(
+            Venta.estado == 'confirmada',
+            func.date(Venta.fecha_hora) == datetime.utcnow().date()
+        ).count()
+        
+        # Total de usuarios por rol
+        total_admins = Usuario.query.filter_by(rol='administrador', activo=True).count()
+        total_vendedores = Usuario.query.filter_by(rol='vendedor', activo=True).count()
+        
+        return render_template('dashboard.html', 
+                              total_productos=total_productos,
+                              productos_bajo_stock=productos_bajo_stock,
+                              ventas_hoy=ventas_hoy,
+                              total_admins=total_admins,
+                              total_vendedores=total_vendedores)
 
 # Gestión de usuarios (solo administrador)
 @auth_bp.route('/usuarios')
@@ -108,6 +128,18 @@ def crear_usuario():
             # Verificar que el username no exista
             if Usuario.query.filter_by(username=username).first():
                 flash('El nombre de usuario ya existe.', 'danger')
+                return render_template('usuario_form.html', action='crear')
+            
+            # Validar política de contraseñas
+            valido, errores = validar_password(password)
+            if not valido:
+                for error in errores:
+                    flash(error, 'danger')
+                return render_template('usuario_form.html', action='crear')
+            
+            # Verificar que la contraseña no contenga el username
+            if username.lower() in password.lower():
+                flash('La contraseña no puede contener tu nombre de usuario.', 'danger')
                 return render_template('usuario_form.html', action='crear')
             
             usuario = Usuario(
@@ -148,6 +180,18 @@ def editar_usuario(id):
             
             password = request.form.get('password')
             if password:
+                # Validar política de contraseñas
+                valido, errores = validar_password(password)
+                if not valido:
+                    for error in errores:
+                        flash(error, 'danger')
+                    return render_template('usuario_form.html', usuario=usuario, action='editar')
+                
+                # Verificar que la contraseña no contenga el username
+                if usuario.username.lower() in password.lower():
+                    flash('La contraseña no puede contener el nombre de usuario.', 'danger')
+                    return render_template('usuario_form.html', usuario=usuario, action='editar')
+                
                 usuario.set_password(password)
             
             db.session.commit()
@@ -184,5 +228,90 @@ def eliminar_usuario(id):
     except Exception as e:
         db.session.rollback()
         flash(f'Error al eliminar el usuario: {str(e)}', 'danger')
+    
+    return redirect(url_for('auth.listar_usuarios'))
+
+# Cambio de contraseña
+@auth_bp.route('/cambiar-password', methods=['GET', 'POST'])
+@login_required
+def cambiar_password():
+    if request.method == 'POST':
+        try:
+            password_actual = request.form.get('password_actual')
+            nueva_password = request.form.get('nueva_password')
+            confirmar_password = request.form.get('confirmar_password')
+            
+            if not password_actual or not nueva_password or not confirmar_password:
+                flash('Por favor complete todos los campos.', 'warning')
+                return render_template('cambiar_password.html')
+            
+            # Verificar contraseña actual
+            if not current_user.check_password(password_actual):
+                flash('La contraseña actual es incorrecta.', 'danger')
+                return render_template('cambiar_password.html')
+            
+            # Verificar que la nueva contraseña no sea igual a la actual
+            if password_actual == nueva_password:
+                flash('La nueva contraseña no puede ser igual a la actual.', 'warning')
+                return render_template('cambiar_password.html')
+            
+            # Verificar que las contraseñas coincidan
+            if nueva_password != confirmar_password:
+                flash('Las contraseñas no coinciden.', 'danger')
+                return render_template('cambiar_password.html')
+            
+            # Validar política de contraseñas
+            valido, errores = validar_password(nueva_password)
+            if not valido:
+                for error in errores:
+                    flash(error, 'danger')
+                return render_template('cambiar_password.html')
+            
+            # Actualizar contraseña
+            current_user.set_password(nueva_password)
+            current_user.debe_cambiar_password = False
+            db.session.commit()
+            
+            flash('Contraseña actualizada exitosamente.', 'success')
+            return redirect(url_for('auth.dashboard'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error al cambiar la contraseña: {str(e)}', 'danger')
+            return render_template('cambiar_password.html')
+    
+    return render_template('cambiar_password.html')
+
+# Restablecer contraseña (solo administrador)
+@auth_bp.route('/usuarios/<int:id>/restablecer-password', methods=['POST'])
+@login_required
+def restablecer_password(id):
+    if current_user.rol != 'administrador':
+        flash('No tienes permiso para restablecer contraseñas.', 'danger')
+        return redirect(url_for('auth.dashboard'))
+    
+    usuario = Usuario.query.get_or_404(id)
+    
+    try:
+        # Generar contraseña temporal que cumpla la política
+        import random
+        import string
+        caracteres = string.ascii_letters + string.digits + '@+/'
+        password_temporal = ''.join(random.choice(caracteres) for _ in range(12))
+        
+        # Asegurar que cumpla la política
+        valido, errores = validar_password(password_temporal)
+        while not valido:
+            password_temporal = ''.join(random.choice(caracteres) for _ in range(12))
+            valido, errores = validar_password(password_temporal)
+        
+        usuario.set_password(password_temporal)
+        usuario.debe_cambiar_password = True
+        db.session.commit()
+        
+        flash(f'Contraseña restablecida exitosamente. La contraseña temporal es: {password_temporal}', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error al restablecer la contraseña: {str(e)}', 'danger')
     
     return redirect(url_for('auth.listar_usuarios'))

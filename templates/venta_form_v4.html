@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva Venta - SGI-TCI MK{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('auth.dashboard') }}">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('ventas.listar') }}">Ventas</a></li>
+            <li class="breadcrumb-item active">Nueva venta</li>
+        </ol>
+    </nav>
+
+    <h2 class="mb-4">Nueva Venta</h2>
+
+    <div class="row">
+        <!-- Columna izquierda: Carrito -->
+        <div class="col-lg-6">
+            <div class="panel">
+                <div class="panel-head">
+                    <i class="bi bi-cart"></i>
+                    Carrito de productos
+                </div>
+                <div class="panel-body">
+                    <!-- Paso 1: Buscar producto -->
+                    <div class="mb-4">
+                        <label for="productoBusqueda" class="form-label">Buscar producto:</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="productoBusqueda" 
+                                   list="productosList" placeholder="Escribe para buscar..." autocomplete="off">
+                            <datalist id="productosList"></datalist>
+                            <button type="button" class="btn btn-primary" onclick="agregarProducto()">
+                                <i class="bi bi-plus"></i> Agregar
+                            </button>
+                        </div>
+                        <small class="text-muted">Escribe el nombre del producto y presiona Enter o "Agregar"</small>
+                    </div>
+
+                    <!-- Lista de productos en el carrito -->
+                    <div id="carritoItems">
+                        <p class="text-muted">No hay productos en el carrito</p>
+                    </div>
+
+                    <!-- Mensaje de error -->
+                    <div id="errorVenta" class="alert alert-danger mt-3" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna derecha: Resumen -->
+        <div class="col-lg-6">
+            <div class="panel">
+                <div class="panel-head">
+                    <i class="bi bi-receipt"></i>
+                    Resumen de la venta
+                </div>
+                <div class="panel-body">
+                    <!-- Paso 4: Revisar -->
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="text-muted">Productos:</div>
+                            <div class="h4" id="productosCount">0</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-muted">Unidades:</div>
+                            <div class="h4" id="unidadesCount">0</div>
+                        </div>
+                    </div>
+
+                    <div class="text-center my-4">
+                        <div class="text-muted">Total de la venta</div>
+                        <div class="total-mk" id="totalVenta">$0.00</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="observaciones" class="form-label">Observaciones (opcional):</label>
+                        <textarea class="form-control" id="observaciones" rows="2" placeholder="Notas adicionales sobre la venta..."></textarea>
+                    </div>
+
+                    <!-- Paso 5: Confirmar -->
+                    <form method="POST" action="{{ url_for('ventas.crear_venta') }}" onsubmit="return validarVenta()">
+                        <input type="hidden" name="productos_json" id="productos_json">
+                        <input type="hidden" name="observaciones" id="observacionesForm">
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-accion" id="btnConfirmarVenta" disabled>
+                                <i class="bi bi-check-circle me-2"></i>
+                                Confirmar venta
+                            </button>
+                            <a href="{{ url_for('ventas.listar') }}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-2"></i>
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/ventas.js') }}"></script>
+<script>
+    // Sincronizar observaciones
+    document.getElementById('observaciones').addEventListener('input', function() {
+        document.getElementById('observacionesForm').value = this.value;
+    });
+</script>
+{% endblock %}

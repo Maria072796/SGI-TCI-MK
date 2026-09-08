@@ -1,154 +1,481 @@
-/* Estilos generales */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --mk-azul-900: #0B3C5D;
+  --mk-azul-600: #1F6FB2;
+  --mk-azul-400: #3E8FD0;
+  --mk-azul-100: #D9E8F5;
+  --mk-rosa-600: #D6457D;
+  --mk-rosa-100: #FBE4EE;
+  --mk-pizarra: #5C6B7A;
+  --mk-fondo: #F6F8FB;
+  --mk-blanco: #FFFFFF;
+  
+  --bs-primary: var(--mk-azul-600);
+  --bs-body-bg: var(--mk-fondo);
+  --bs-body-font-family: 'Inter', system-ui, sans-serif;
+}
+
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f8f9fa;
+  background: var(--mk-fondo);
+  color: #1F2937;
+  font-family: 'Inter', system-ui, sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
-/* Estilos de tarjetas */
-.card {
-    border-radius: 0.5rem;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    margin-bottom: 1rem;
+/* Layout Principal */
+.sidebar {
+  width: 240px;
+  min-height: 100vh;
+  background: var(--mk-azul-900);
+  position: fixed;
+  left: 0;
+  top: 0;
+  transition: all 0.2s ease;
+  z-index: 1000;
 }
 
-.card-header {
-    background-color: #fff;
-    border-bottom: 1px solid #dee2e6;
-    font-weight: 600;
+.sidebar .brand {
+  color: #fff;
+  font-weight: 700;
+  padding: 20px 24px;
+  font-size: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Estilos de tablas */
-.table {
-    margin-bottom: 0;
+.sidebar .brand-subtitle {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  margin-top: 4px;
 }
 
-.table th {
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.875rem;
+.sidebar .nav-link {
+  color: rgba(255, 255, 255, 0.85);
+  padding: 12px 24px;
+  border-left: 4px solid transparent;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  transition: all 0.2s ease;
 }
 
-/* Estilos de botones */
+.sidebar .nav-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.sidebar .nav-link.active {
+  background: var(--mk-azul-600);
+  border-left-color: var(--mk-rosa-600);
+  color: #fff;
+}
+
+.sidebar .nav-link i {
+  font-size: 18px;
+  width: 20px;
+  text-align: center;
+}
+
+.sidebar .sidebar-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.topbar {
+  height: 56px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(11, 60, 93, 0.08);
+  margin-left: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 240px;
+  z-index: 999;
+}
+
+.topbar .datetime {
+  color: var(--mk-pizarra);
+  font-size: 14px;
+}
+
+.topbar .user-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.content {
+  margin-left: 240px;
+  margin-top: 56px;
+  padding: 24px 32px;
+  min-height: calc(100vh - 56px);
+}
+
+/* Badges de rol */
+.rol-badge {
+  border-radius: 999px;
+  padding: 2px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+.rol-admin {
+  background: var(--mk-azul-600);
+}
+
+.rol-vendedor {
+  background: var(--mk-rosa-600);
+}
+
+/* Tarjetas de estadísticas */
+.stat-card {
+  background: #fff;
+  border: 1px solid #E3E8EF;
+  border-radius: 8px;
+  display: flex;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+  height: 80px;
+}
+
+.stat-card:hover {
+  box-shadow: 0 4px 12px rgba(11, 60, 93, 0.1);
+  transform: translateY(-2px);
+}
+
+.stat-card .ico {
+  width: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 28px;
+}
+
+.stat-card .content {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0;
+}
+
+.stat-card .val {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--mk-azul-900);
+  line-height: 1;
+}
+
+.stat-card .lbl {
+  font-size: 13px;
+  color: var(--mk-pizarra);
+  margin-top: 4px;
+}
+
+.bg-azul-600 { background: var(--mk-azul-600); }
+.bg-azul-400 { background: var(--mk-azul-400); }
+.bg-azul-900 { background: var(--mk-azul-900); }
+.bg-rosa-600 { background: var(--mk-rosa-600); }
+
+/* Paneles */
+.panel {
+  background: #fff;
+  border: 1px solid #E3E8EF;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.panel .panel-head {
+  background: var(--mk-azul-100);
+  color: var(--mk-azul-900);
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel .panel-body {
+  padding: 16px;
+}
+
+/* Tablas */
+.table thead th {
+  background: var(--mk-azul-900);
+  color: #fff;
+  font-weight: 500;
+  border: none;
+  padding: 12px 16px;
+}
+
+.table tbody tr:nth-child(even) {
+  background: #FAFBFD;
+}
+
+.table tbody tr:hover {
+  background: var(--mk-azul-100);
+}
+
+.table tr.stock-bajo {
+  background: var(--mk-rosa-100);
+}
+
+.table td, .table th {
+  vertical-align: middle;
+}
+
+.table .text-right {
+  text-align: right;
+}
+
+/* Botones */
 .btn {
-    border-radius: 0.375rem;
-    padding: 0.5rem 1rem;
-    font-weight: 500;
+  min-height: 44px;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-weight: 500;
 }
 
-.btn-lg {
-    padding: 0.75rem 1.5rem;
-    font-size: 1.125rem;
+.btn-primary {
+  background: var(--mk-azul-600);
+  border-color: var(--mk-azul-600);
+  color: #fff;
 }
 
-/* Estilos de formulario */
-.form-control:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+.btn-primary:hover {
+  background: var(--mk-azul-400);
+  border-color: var(--mk-azul-400);
+  color: #fff;
 }
 
-.form-select:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+.btn-accion {
+  background: var(--mk-rosa-600);
+  border-color: var(--mk-rosa-600);
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.1rem;
+  min-height: 56px;
+  padding: 16px 32px;
 }
 
-/* Estilos de alertas */
-.alert {
-    border-radius: 0.5rem;
-    border: none;
+.btn-accion:hover {
+  background: #B0376D;
+  border-color: #B0376D;
+  color: #fff;
 }
 
-/* Estilos de badges */
-.badge {
-    font-weight: 500;
-    padding: 0.35em 0.65em;
+.btn-secondary {
+  background: #fff;
+  color: var(--mk-pizarra);
+  border-color: var(--mk-pizarra);
 }
 
-/* Estilos de footer */
-.footer {
-    background-color: #f8f9fa;
-    border-top: 1px solid #dee2e6;
-    margin-top: auto;
+.btn-secondary:hover {
+  background: var(--mk-fondo);
+  color: var(--mk-pizarra);
 }
 
-/* Estilos de navbar */
-.navbar-brand {
-    font-weight: 700;
-    font-size: 1.25rem;
+/* Alertas personalizadas */
+.alert-mk-warning {
+  background: var(--mk-rosa-100);
+  border: 1px solid var(--mk-rosa-600);
+  color: #7A1F45;
 }
 
-/* Estilos de dashboard */
-.display-4 {
-    font-size: 2.5rem;
-    font-weight: 700;
+/* Totales */
+.total-mk {
+  color: var(--mk-rosa-600);
+  font-size: 1.75rem;
+  font-weight: 700;
 }
 
-/* Estilos de productos en venta */
-.producto-item {
-    background-color: #f8f9fa;
-    border-radius: 0.5rem;
+/* Miga de pan */
+.breadcrumb {
+  background: transparent;
+  padding: 0;
+  margin-bottom: 16px;
 }
 
-/* Estilos de inputs de solo lectura */
-input[readonly] {
-    background-color: #e9ecef;
-    cursor: not-allowed;
+.breadcrumb-item a {
+  color: var(--mk-azul-600);
+  text-decoration: none;
 }
 
-/* Estilos de validación */
-.is-invalid {
-    border-color: #dc3545;
+.breadcrumb-item.active {
+  color: var(--mk-pizarra);
 }
 
-.invalid-feedback {
-    display: none;
-    width: 100%;
-    margin-top: 0.25rem;
-    font-size: 0.875em;
-    color: #dc3545;
+/* Estados de venta */
+.estado-confirmada {
+  color: var(--mk-azul-600);
+  font-weight: 600;
 }
 
-.is-invalid ~ .invalid-feedback {
-    display: block;
+.estado-anulada {
+  color: var(--mk-pizarra);
+  text-decoration: line-through;
 }
 
 /* Responsive */
-@media (max-width: 768px) {
-    .display-4 {
-        font-size: 2rem;
-    }
-    
-    .btn-group {
-        flex-direction: column;
-    }
-    
-    .table-responsive {
-        font-size: 0.875rem;
-    }
+@media (max-width: 991px) {
+  .sidebar {
+    width: 64px;
+  }
+  
+  .sidebar .nav-link span,
+  .sidebar .brand span,
+  .sidebar .brand-subtitle {
+    display: none;
+  }
+  
+  .sidebar .nav-link {
+    justify-content: center;
+    padding: 12px;
+  }
+  
+  .sidebar .nav-link i {
+    margin: 0;
+  }
+  
+  .topbar,
+  .content {
+    margin-left: 64px;
+  }
+  
+  .topbar {
+    left: 64px;
+  }
+}
+
+@media (max-width: 767px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: 0.2s;
+  }
+  
+  .sidebar.open {
+    transform: none;
+    width: 240px;
+  }
+  
+  .sidebar.open .nav-link span,
+  .sidebar.open .brand span,
+  .sidebar.open .brand-subtitle {
+    display: inline;
+  }
+  
+  .sidebar.open .nav-link {
+    justify-content: flex-start;
+    padding: 12px 24px;
+  }
+  
+  .topbar,
+  .content {
+    margin-left: 0;
+  }
+  
+  .topbar {
+    left: 0;
+  }
+  
+  .stat-card {
+    height: auto;
+  }
+  
+  .stat-card .ico {
+    width: 56px;
+    font-size: 24px;
+  }
+  
+  .stat-card .val {
+    font-size: 24px;
+  }
 }
 
 /* Animaciones */
 .fade-in {
-    animation: fadeIn 0.3s ease-in;
+  animation: fadeIn 0.3s ease-in;
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* Estilos para el total de venta */
-#totalVenta {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #0d6efd;
+/* Formularios */
+.form-control, .form-select {
+  min-height: 44px;
+  border-radius: 6px;
+  border: 1px solid #E3E8EF;
 }
 
-/* Estilos para el formulario de venta */
-.subtotal-input {
-    font-weight: 600;
-    background-color: #e9ecef;
+.form-control:focus, .form-select:focus {
+  border-color: var(--mk-azul-600);
+  box-shadow: 0 0 0 0.2rem rgba(31, 111, 178, 0.25);
+}
+
+/* Validación de contraseña */
+.password-rule {
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+  color: var(--mk-pizarra);
+}
+
+.password-rule.valid {
+  color: #198754;
+}
+
+.password-rule.invalid {
+  color: #DC3545;
+}
+
+.password-rule::before {
+  content: "✗ ";
+  margin-right: 0.25rem;
+}
+
+.password-rule.valid::before {
+  content: "✓ ";
+}
+
+/* Etiquetas de cierre */
+.etiqueta-turno {
+  background: var(--mk-pizarra);
+  color: #fff;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+}
+
+.etiqueta-dia {
+  background: var(--mk-azul-600);
+  color: #fff;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
 }
