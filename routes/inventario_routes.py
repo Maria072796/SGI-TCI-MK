@@ -8,12 +8,13 @@ inventario_bp = Blueprint('inventario', __name__, url_prefix='/inventario')
 @inventario_bp.route('/')
 @login_required
 def listar():
-    if current_user.rol != 'administrador':
+    # Permitir acceso a vendedores (solo lectura) y administradores
+    if current_user.rol not in ['administrador', 'vendedor']:
         flash('No tienes permiso para acceder al inventario.', 'danger')
         return redirect(url_for('auth.dashboard'))
     
     productos = Producto.query.filter_by(activo=True).all()
-    return render_template('inventario.html', productos=productos)
+    return render_template('inventario.html', productos=productos, es_admin=current_user.rol == 'administrador')
 
 @inventario_bp.route('/crear', methods=['GET', 'POST'])
 @login_required
@@ -128,7 +129,8 @@ def eliminar(id):
 @inventario_bp.route('/api/productos')
 @login_required
 def api_productos():
-    if current_user.rol != 'administrador':
+    # Permitir acceso a vendedores y administradores para el formulario de ventas
+    if current_user.rol not in ['administrador', 'vendedor']:
         return jsonify({'error': 'No autorizado'}), 403
     
     productos = Producto.query.filter_by(activo=True).all()
