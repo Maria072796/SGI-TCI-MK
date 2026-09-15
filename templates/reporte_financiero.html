@@ -20,7 +20,9 @@
                 <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" 
                        value="{{ fecha_fin.strftime('%Y-%m-%d') }}">
             </div>
-            <button type="submit" class="btn btn-primary">Generar Reporte</button>
+            <a href="{{ url_for('reportes.reporte_financiero_pdf', fecha_inicio=fecha_inicio.strftime('%Y-%m-%d'), fecha_fin=fecha_fin.strftime('%Y-%m-%d')) }}" class="btn btn-primary">
+                <i class="bi bi-file-earmark-pdf"></i> Generar Reporte PDF
+            </a>
         </form>
     </div>
 </div>
@@ -29,8 +31,8 @@
     <div class="col-md-3 mb-4">
         <div class="card text-white bg-success">
             <div class="card-body">
-                <h5 class="card-title">Total Ventas</h5>
-                <p class="card-text display-6">${{ "%.2f"|format(total_ventas) }}</p>
+                <h5 class="card-title">Total Ingresos</h5>
+                <p class="card-text display-6">{{ total_ventas|moneda }}</p>
                 <small class="text-white-50">{{ ventas|length }} ventas</small>
             </div>
         </div>
@@ -40,7 +42,7 @@
         <div class="card text-white bg-danger">
             <div class="card-body">
                 <h5 class="card-title">Total Costos</h5>
-                <p class="card-text display-6">${{ "%.2f"|format(total_costos) }}</p>
+                <p class="card-text display-6">{{ total_costos|moneda }}</p>
             </div>
         </div>
     </div>
@@ -49,7 +51,7 @@
         <div class="card text-white bg-warning">
             <div class="card-body">
                 <h5 class="card-title">Total Egresos</h5>
-                <p class="card-text display-6">${{ "%.2f"|format(total_egresos) }}</p>
+                <p class="card-text display-6">{{ total_egresos|moneda }}</p>
                 <small class="text-white-50">{{ egresos|length }} egresos</small>
             </div>
         </div>
@@ -59,7 +61,7 @@
         <div class="card text-white {% if utilidad_real >= 0 %}bg-primary{% else %}bg-secondary{% endif %}">
             <div class="card-body">
                 <h5 class="card-title">Utilidad Real</h5>
-                <p class="card-text display-6">${{ "%.2f"|format(utilidad_real) }}</p>
+                <p class="card-text display-6">{{ utilidad_real|moneda }}</p>
             </div>
         </div>
     </div>
@@ -89,7 +91,7 @@
                                         <td>{{ venta.id }}</td>
                                         <td>{{ venta.fecha_hora.strftime('%d/%m/%Y %H:%M') }}</td>
                                         <td>{{ venta.usuario.nombre_completo or venta.usuario.username }}</td>
-                                        <td>${{ "%.2f"|format(venta.total) }}</td>
+                                        <td>{{ venta.total|moneda }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -125,7 +127,7 @@
                                         <td>{{ egreso.id }}</td>
                                         <td>{{ egreso.fecha_hora.strftime('%d/%m/%Y %H:%M') }}</td>
                                         <td>{{ egreso.descripcion }}</td>
-                                        <td>${{ "%.2f"|format(egreso.monto) }}</td>
+                                        <td>{{ egreso.monto|moneda }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -154,20 +156,20 @@
                                 <td>{{ fecha_inicio.strftime('%d/%m/%Y') }} - {{ fecha_fin.strftime('%d/%m/%Y') }}</td>
                             </tr>
                             <tr>
-                                <td><strong>Total Ventas:</strong></td>
-                                <td class="text-end">${{ "%.2f"|format(total_ventas) }}</td>
+                                <td><strong>Total Ingresos:</strong></td>
+                                <td class="text-end">{{ total_ventas|moneda }}</td>
                             </tr>
                             <tr>
                                 <td><strong>Total Costos de Productos:</strong></td>
-                                <td class="text-end">${{ "%.2f"|format(total_costos) }}</td>
+                                <td class="text-end">{{ total_costos|moneda }}</td>
                             </tr>
                             <tr>
                                 <td><strong>Total Egresos:</strong></td>
-                                <td class="text-end">${{ "%.2f"|format(total_egresos) }}</td>
+                                <td class="text-end">{{ total_egresos|moneda }}</td>
                             </tr>
                             <tr class="table-primary">
                                 <td><strong>Utilidad Real:</strong></td>
-                                <td class="text-end fw-bold">${{ "%.2f"|format(utilidad_real) }}</td>
+                                <td class="text-end fw-bold">{{ utilidad_real|moneda }}</td>
                             </tr>
                         </table>
                     </div>

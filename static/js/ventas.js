@@ -3,8 +3,15 @@
 let productosCarrito = [];
 let productosDisponibles = [];
 
+// Error handler global para capturar errores de JavaScript
+window.onerror = function(message, source, lineno, colno, error) {
+    console.error('Error global de JavaScript:', message, 'en', source, 'línea', lineno);
+    console.error('Error completo:', error);
+};
+
 // Cargar productos disponibles al iniciar
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded - Iniciando carga de productos');
     cargarProductosDisponibles();
 });
 
@@ -58,7 +65,7 @@ function agregarProducto() {
     }
     
     // Verificar que no esté ya en el carrito
-    if (productosCarrito.find(p => p.id === producto.id)) {
+    if (productosCarrito.find(p => p.producto_id === producto.id)) {
         mostrarError('Este producto ya está en el carrito');
         return;
     }
@@ -71,7 +78,7 @@ function agregarProducto() {
     
     // Agregar al carrito con cantidad 1
     productosCarrito.push({
-        id: producto.id,
+        producto_id: producto.id,
         nombre: producto.nombre,
         precio_unitario: producto.precio_venta,
         costo_unitario: producto.precio_costo,
@@ -101,16 +108,22 @@ function actualizarCarrito() {
     productosCarrito.forEach((producto, index) => {
         const fila = document.createElement('div');
         fila.className = 'd-flex align-items-center mb-2 producto-item';
+        
+        // HTML de advertencia si existe
+        const advertenciaHTML = producto.advertencia ? 
+            `<div class="text-warning small mt-1" style="color: #d97706;">⚠️ ${producto.advertencia}</div>` : '';
+        
         fila.innerHTML = `
             <div class="flex-grow-1">
                 <strong>${producto.nombre}</strong>
                 <div class="small text-muted">$${producto.precio_unitario.toFixed(2)} c/u - Stock: ${producto.stock_disponible}</div>
+                ${advertenciaHTML}
             </div>
             <div class="d-flex align-items-center">
                 <button type="button" class="btn btn-sm btn-outline-secondary" onclick="cambiarCantidad(${index}, -1)">-</button>
-                <input type="number" class="form-control form-control-sm mx-2" style="width: 60px" 
-                       value="${producto.cantidad}" min="1" max="${producto.stock_disponible}" 
-                       onchange="cambiarCantidad(${index}, this.value)">
+                <input type="number" class="form-control form-control-sm mx-2 cantidad-input" style="width: 60px" 
+                       value="${producto.cantidad}" min="1" max="${producto.stock_disponible}"
+                       onchange="cambiarCantidadManual(${index}, this.value)">
                 <button type="button" class="btn btn-sm btn-outline-secondary" onclick="cambiarCantidad(${index}, 1)">+</button>
             </div>
             <div class="text-end ms-3" style="min-width: 80px">
@@ -127,16 +140,26 @@ function actualizarCarrito() {
     actualizarTotales();
 }
 
-function cambiarCantidad(index, nuevaCantidad) {
-    const producto = productosCarrito[index];
+function cambiarCantidad(index, delta) {
+    console.log('cambiarCantidad called with index:', index, 'delta:', delta);
     
-    if (typeof nuevaCantidad === 'string') {
-        nuevaCantidad = parseInt(nuevaCantidad);
+    const producto = productosCarrito[index];
+    if (!producto) {
+        console.error('Producto no encontrado en índice:', index);
+        return;
     }
+    
+    // Calcular nueva cantidad basada en el valor acumulado del carrito
+    const nuevaCantidad = producto.cantidad + delta;
+    
+    console.log('Cantidad actual:', producto.cantidad, 'Delta:', delta, 'Nueva cantidad:', nuevaCantidad);
     
     // Validar stock
     if (nuevaCantidad > producto.stock_disponible) {
-        mostrarError(`Stock insuficiente. Disponible: ${producto.stock_disponible}`);
+        mostrarError(`Stock máximo alcanzado (${producto.stock_disponible} disponibles)`);
+        // Añadir mensaje de advertencia al producto
+        producto.advertencia = `Stock máximo: ${producto.stock_disponible}`;
+        actualizarCarrito();
         return;
     }
     
@@ -145,9 +168,52 @@ function cambiarCantidad(index, nuevaCantidad) {
         return;
     }
     
+    // Limpiar advertencia si está todo bien
+    producto.advertencia = null;
+    
+    // Modificar el objeto real en el array del carrito
     producto.cantidad = nuevaCantidad;
     producto.subtotal = producto.precio_unitario * producto.cantidad;
     
+    console.log('Producto actualizado:', producto);
+    
+    // Volver a renderizar el carrito para mostrar los cambios
+    actualizarCarrito();
+}
+
+function cambiarCantidadManual(index, valorManual) {
+    console.log('cambiarCantidadManual called with index:', index, 'valor:', valorManual);
+    
+    const producto = productosCarrito[index];
+    if (!producto) {
+        console.error('Producto no encontrado en índice:', index);
+        return;
+    }
+    
+    // Validar que sea un número válido
+    let nuevaCantidad = parseInt(valorManual);
+    if (isNaN(nuevaCantidad) || nuevaCantidad < 1) {
+        nuevaCantidad = 1;
+    }
+    
+    // Validar stock máximo
+    if (nuevaCantidad > producto.stock_disponible) {
+        nuevaCantidad = producto.stock_disponible;
+        mostrarError(`Stock máximo alcanzado (${producto.stock_disponible} disponibles)`);
+        // Añadir mensaje de advertencia al producto
+        producto.advertencia = `Stock máximo: ${producto.stock_disponible}`;
+    } else {
+        // Limpiar advertencia si está todo bien
+        producto.advertencia = null;
+    }
+    
+    // Modificar el objeto real en el array del carrito
+    producto.cantidad = nuevaCantidad;
+    producto.subtotal = producto.precio_unitario * producto.cantidad;
+    
+    console.log('Producto actualizado manualmente:', producto);
+    
+    // Volver a renderizar el carrito para mostrar los cambios
     actualizarCarrito();
 }
 

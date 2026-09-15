@@ -3,7 +3,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from models import db, Usuario
 from datetime import datetime, timedelta
 from sqlalchemy import func
-from utils.seguridad import validar_password, password_vencida, password_pronto_vencer
+from utils.seguridad import validar_password, password_vencida, password_pronto_vencer, rol_requerido
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -69,16 +69,27 @@ def dashboard():
             func.date(Venta.fecha_hora) == datetime.utcnow().date()
         ).scalar() or 0
         
+        # Agregar productos disponibles para vendedor
+        total_productos = Producto.query.filter_by(activo=True).count()
+        
+        # Agregar productos con stock bajo para alertas
+        productos_bajo_stock = Producto.query.filter(
+            Producto.activo == True,
+            Producto.stock_actual <= Producto.stock_minimo
+        ).all()
+        
         return render_template('dashboard.html', 
                               ventas_hoy=ventas_hoy,
-                              total_vendido_hoy=total_vendido_hoy)
+                              total_vendido_hoy=total_vendido_hoy,
+                              total_productos=total_productos,
+                              productos_bajo_stock=productos_bajo_stock)
     else:
         # Administrador: estadísticas completas
         total_productos = Producto.query.filter_by(activo=True).count()
         productos_bajo_stock = Producto.query.filter(
             Producto.activo == True,
             Producto.stock_actual <= Producto.stock_minimo
-        ).count()
+        ).all()
         
         ventas_hoy = Venta.query.filter(
             Venta.estado == 'confirmada',
@@ -89,31 +100,34 @@ def dashboard():
         total_admins = Usuario.query.filter_by(rol='administrador', activo=True).count()
         total_vendedores = Usuario.query.filter_by(rol='vendedor', activo=True).count()
         
+        # Productos más vendidos (usando función existente en utils/finanzas.py)
+        from utils.finanzas import productos_mas_vendidos
+        productos_mas_vendidos = productos_mas_vendidos(limite=5)
+        
+        # Últimas ventas (últimas 5 ventas confirmadas)
+        ultimas_ventas = Venta.query.filter_by(estado='confirmada').order_by(Venta.fecha_hora.desc()).limit(5).all()
+        
         return render_template('dashboard.html', 
                               total_productos=total_productos,
                               productos_bajo_stock=productos_bajo_stock,
                               ventas_hoy=ventas_hoy,
                               total_admins=total_admins,
-                              total_vendedores=total_vendedores)
+                              total_vendedores=total_vendedores,
+                              productos_mas_vendidos=productos_mas_vendidos,
+                              ultimas_ventas=ultimas_ventas)
 
 # Gestión de usuarios (solo administrador)
 @auth_bp.route('/usuarios')
 @login_required
+@rol_requerido('administrador')
 def listar_usuarios():
-    if current_user.rol != 'administrador':
-        flash('No tienes permiso para gestionar usuarios.', 'danger')
-        return redirect(url_for('auth.dashboard'))
-    
     usuarios = Usuario.query.all()
     return render_template('usuarios.html', usuarios=usuarios)
 
 @auth_bp.route('/usuarios/crear', methods=['GET', 'POST'])
 @login_required
+@rol_requerido('administrador')
 def crear_usuario():
-    if current_user.rol != 'administrador':
-        flash('No tienes permiso para crear usuarios.', 'danger')
-        return redirect(url_for('auth.dashboard'))
-    
     if request.method == 'POST':
         try:
             username = request.form.get('username')
@@ -165,11 +179,8 @@ def crear_usuario():
 
 @auth_bp.route('/usuarios/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
+@rol_requerido('administrador')
 def editar_usuario(id):
-    if current_user.rol != 'administrador':
-        flash('No tienes permiso para editar usuarios.', 'danger')
-        return redirect(url_for('auth.dashboard'))
-    
     usuario = Usuario.query.get_or_404(id)
     
     if request.method == 'POST':
@@ -207,11 +218,8 @@ def editar_usuario(id):
 
 @auth_bp.route('/usuarios/eliminar/<int:id>', methods=['POST'])
 @login_required
+@rol_requerido('administrador')
 def eliminar_usuario(id):
-    if current_user.rol != 'administrador':
-        flash('No tienes permiso para eliminar usuarios.', 'danger')
-        return redirect(url_for('auth.dashboard'))
-    
     usuario = Usuario.query.get_or_404(id)
     
     # No permitir eliminar el último administrador
@@ -285,11 +293,8 @@ def cambiar_password():
 # Restablecer contraseña (solo administrador)
 @auth_bp.route('/usuarios/<int:id>/restablecer-password', methods=['POST'])
 @login_required
+@rol_requerido('administrador')
 def restablecer_password(id):
-    if current_user.rol != 'administrador':
-        flash('No tienes permiso para restablecer contraseñas.', 'danger')
-        return redirect(url_for('auth.dashboard'))
-    
     usuario = Usuario.query.get_or_404(id)
     
     try:

@@ -25,9 +25,9 @@
             <div class="row align-items-center">
                 <div class="col-md-4">
                     <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-primary active">Hoy</button>
-                        <button type="button" class="btn btn-outline-primary">Esta semana</button>
-                        <button type="button" class="btn btn-outline-primary">Todas</button>
+                        <a href="{{ url_for('ventas.listar', filtro='hoy') }}" class="btn btn-primary {% if request.args.get('filtro') == 'hoy' or not request.args.get('filtro') %}active{% endif %}">Hoy</a>
+                        <a href="{{ url_for('ventas.listar', filtro='semana') }}" class="btn btn-outline-primary {% if request.args.get('filtro') == 'semana' %}active{% endif %}">Esta semana</a>
+                        <a href="{{ url_for('ventas.listar', filtro='todas') }}" class="btn btn-outline-primary {% if request.args.get('filtro') == 'todas' %}active{% endif %}">Todas</a>
                     </div>
                 </div>
                 <div class="col-md-4 offset-md-4">
@@ -62,7 +62,7 @@
                             <td>{{ venta.id }}</td>
                             <td>{{ venta.fecha_hora|fecha_hora }}</td>
                             <td>{{ venta.detalles|length }} producto{{ 's' if venta.detalles|length != 1 else '' }}</td>
-                            <td class="text-right">${{ venta.total|moneda }}</td>
+                            <td class="text-right">{{ venta.total|moneda }}</td>
                             <td>
                                 {% if venta.estado == 'confirmada' %}
                                     <span class="estado-confirmada">Confirmada</span>

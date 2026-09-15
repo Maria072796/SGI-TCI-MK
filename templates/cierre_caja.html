@@ -33,8 +33,8 @@
     <div class="col-md-3 mb-4">
         <div class="card text-white bg-success">
             <div class="card-body">
-                <h5 class="card-title">Total Ventas</h5>
-                <p class="card-text display-6">${{ "%.2f"|format(total_ventas) }}</p>
+                <h5 class="card-title">Total Ingresos</h5>
+                <p class="card-text display-6">{{ total_ventas|moneda }}</p>
             </div>
         </div>
     </div>
@@ -43,7 +43,7 @@
         <div class="card text-white bg-danger">
             <div class="card-body">
                 <h5 class="card-title">Total Costos</h5>
-                <p class="card-text display-6">${{ "%.2f"|format(total_costos) }}</p>
+                <p class="card-text display-6">{{ total_costos|moneda }}</p>
             </div>
         </div>
     </div>
@@ -52,7 +52,7 @@
         <div class="card text-white bg-warning">
             <div class="card-body">
                 <h5 class="card-title">Total Egresos</h5>
-                <p class="card-text display-6">${{ "%.2f"|format(total_egresos) }}</p>
+                <p class="card-text display-6">{{ total_egresos|moneda }}</p>
             </div>
         </div>
     </div>
@@ -61,7 +61,7 @@
         <div class="card text-white {% if utilidad_real >= 0 %}bg-primary{% else %}bg-secondary{% endif %}">
             <div class="card-body">
                 <h5 class="card-title">Utilidad Real</h5>
-                <p class="card-text display-6">${{ "%.2f"|format(utilidad_real) }}</p>
+                <p class="card-text display-6">{{ utilidad_real|moneda }}</p>
             </div>
         </div>
     </div>
@@ -78,20 +78,20 @@
                     <div class="col-md-6">
                         <table class="table table-bordered">
                             <tr>
-                                <td><strong>Total Ventas:</strong></td>
-                                <td class="text-end">${{ "%.2f"|format(total_ventas) }}</td>
+                                <td><strong>Total Ingresos:</strong></td>
+                                <td class="text-end">{{ total_ventas|moneda }}</td>
                             </tr>
                             <tr>
                                 <td><strong>Total Costos de Productos:</strong></td>
-                                <td class="text-end">${{ "%.2f"|format(total_costos) }}</td>
+                                <td class="text-end">{{ total_costos|moneda }}</td>
                             </tr>
                             <tr>
                                 <td><strong>Total Egresos:</strong></td>
-                                <td class="text-end">${{ "%.2f"|format(total_egresos) }}</td>
+                                <td class="text-end">{{ total_egresos|moneda }}</td>
                             </tr>
                             <tr class="table-primary">
                                 <td><strong>Utilidad Real:</strong></td>
-                                <td class="text-end fw-bold">${{ "%.2f"|format(utilidad_real) }}</td>
+                                <td class="text-end fw-bold">{{ utilidad_real|moneda }}</td>
                             </tr>
                         </table>
                     </div>
