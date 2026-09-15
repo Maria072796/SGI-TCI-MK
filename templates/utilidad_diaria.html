@@ -22,8 +22,8 @@
     <div class="col-md-3 mb-4">
         <div class="card text-white bg-success">
             <div class="card-body">
-                <h5 class="card-title">Total Ventas</h5>
-                <p class="card-text display-6">${{ "%.2f"|format(total_ventas) }}</p>
+                <h5 class="card-title">Total Ingresos</h5>
+                <p class="card-text display-6">{{ total_ventas|moneda }}</p>
             </div>
         </div>
     </div>
@@ -32,7 +32,7 @@
         <div class="card text-white bg-danger">
             <div class="card-body">
                 <h5 class="card-title">Total Costos</h5>
-                <p class="card-text display-6">${{ "%.2f"|format(total_costos) }}</p>
+                <p class="card-text display-6">{{ total_costos|moneda }}</p>
             </div>
         </div>
     </div>
@@ -41,7 +41,7 @@
         <div class="card text-white bg-warning">
             <div class="card-body">
                 <h5 class="card-title">Total Egresos</h5>
-                <p class="card-text display-6">${{ "%.2f"|format(total_egresos) }}</p>
+                <p class="card-text display-6">{{ total_egresos|moneda }}</p>
             </div>
         </div>
     </div>
@@ -50,7 +50,7 @@
         <div class="card text-white {% if utilidad_real >= 0 %}bg-primary{% else %}bg-secondary{% endif %}">
             <div class="card-body">
                 <h5 class="card-title">Utilidad Real</h5>
-                <p class="card-text display-6">${{ "%.2f"|format(utilidad_real) }}</p>
+                <p class="card-text display-6">{{ utilidad_real|moneda }}</p>
             </div>
         </div>
     </div>
@@ -80,7 +80,7 @@
                                         <td>{{ venta.id }}</td>
                                         <td>{{ venta.fecha_hora.strftime('%H:%M') }}</td>
                                         <td>{{ venta.usuario.nombre_completo or venta.usuario.username }}</td>
-                                        <td>${{ "%.2f"|format(venta.total) }}</td>
+                                        <td>{{ venta.total|moneda }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -116,7 +116,7 @@
                                         <td>{{ egreso.id }}</td>
                                         <td>{{ egreso.fecha_hora.strftime('%H:%M') }}</td>
                                         <td>{{ egreso.descripcion }}</td>
-                                        <td>${{ "%.2f"|format(egreso.monto) }}</td>
+                                        <td>{{ egreso.monto|moneda }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>

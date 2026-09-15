@@ -42,7 +42,7 @@
                             <td>{{ egreso.fecha_hora|fecha_hora }}</td>
                             <td>{{ egreso.descripcion }}</td>
                             <td>{{ egreso.categoria|default('Sin categoría') }}</td>
-                            <td class="text-right text-danger fw-bold">${{ egreso.monto|moneda }}</td>
+                            <td class="text-right text-danger fw-bold">{{ egreso.monto|moneda }}</td>
                             <td>{{ egreso.usuario.nombre_completo if egreso.usuario else 'N/A' }}</td>
                             <td>
                                 <div class="btn-group btn-group-sm">

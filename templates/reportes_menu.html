@@ -11,7 +11,26 @@
         </ol>
     </nav>
 
-    <div class="row">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-4">Reportes de Inventario</h2>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="display-4 mb-3">📦</div>
+                    <h4 class="card-title">Reporte de Inventario</h4>
+                    <p class="card-text text-aux">Consulta el estado actual del inventario, stock bajo y valor total de productos.</p>
+                    <a href="{{ url_for('reportes.reporte_inventario') }}" class="btn btn-primary mt-3">Ver Inventario</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
         <div class="col-12">
             <h2 class="mb-4">Reportes Financieros</h2>
         </div>

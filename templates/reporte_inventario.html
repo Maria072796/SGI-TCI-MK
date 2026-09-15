@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Reporte de Inventario - SGI-TCI MK{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('auth.dashboard') }}">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('reportes.reportes_menu') }}">Reportes</a></li>
+            <li class="breadcrumb-item active">Reporte de Inventario</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>Reporte de Inventario</h2>
+                <div>
+                    <a href="{{ url_for('reportes.reporte_inventario_pdf') }}" class="btn btn-primary">
+                        <i class="bi bi-file-earmark-pdf"></i> Generar Reporte de Inventario PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen superior -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Total Productos</h5>
+                    <p class="card-text display-6">{{ total_productos }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card text-white {% if total_stock_bajo > 0 %}bg-danger{% else %}bg-success{% endif %}">
+                <div class="card-body">
+                    <h5 class="card-title">Productos con Stock Bajo</h5>
+                    <p class="card-text display-6">{{ total_stock_bajo }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Valor Total del Inventario</h5>
+                    <p class="card-text display-6">{{ valor_total_inventario|moneda }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de inventario -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Detalle del Inventario</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="tablaInventario">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Descripción</th>
+                                    <th>Precio Costo</th>
+                                    <th>Precio Venta</th>
+                                    <th>Stock Actual</th>
+                                    <th>Stock Mínimo</th>
+                                    <th>Valor Total</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in productos %}
+                                <tr {% if item.stock_bajo %}class="table-danger"{% endif %}>
+                                    <td>{{ item.producto.id }}</td>
+                                    <td>{{ item.producto.nombre }}</td>
+                                    <td>{{ item.producto.descripcion|truncate(50) if item.producto.descripcion else '-' }}</td>
+                                    <td>{{ item.producto.precio_costo|moneda }}</td>
+                                    <td>{{ item.producto.precio_venta|moneda }}</td>
+                                    <td>{{ item.producto.stock_actual }}</td>
+                                    <td>{{ item.producto.stock_minimo }}</td>
+                                    <td>{{ item.valor_total|moneda }}</td>
+                                    <td>
+                                        {% if item.stock_bajo %}
+                                            <span class="badge bg-danger">Stock Bajo</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Normal</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+{% endblock %}

@@ -1,8 +1,6 @@
 import os
 import sys
 from dotenv import load_dotenv
-import mysql.connector
-from mysql.connector import Error
 
 # Configurar encoding para Windows
 if sys.platform == 'win32':
@@ -13,44 +11,11 @@ if sys.platform == 'win32':
 # Cargar variables de entorno
 load_dotenv()
 
-def verificar_mysql():
-    """Verifica la conexión a MySQL antes de iniciar la aplicación."""
-    db_host = os.getenv('DB_HOST', 'localhost')
-    db_port = int(os.getenv('DB_PORT', '3306'))
-    db_name = os.getenv('DB_NAME', 'sgi_tci_mk')
-    db_user = os.getenv('DB_USER', 'root')
-    db_password = os.getenv('DB_PASSWORD', '')
-    
-    try:
-        print(f"Verificando conexión a MySQL en {db_host}:{db_port}...")
-        connection = mysql.connector.connect(
-            host=db_host,
-            port=db_port,
-            database=db_name,
-            user=db_user,
-            password=db_password
-        )
-        connection.close()
-        print("✓ Conexión a MySQL exitosa.")
-        return True
-    except Error as e:
-        print("✗ Error de conexión a MySQL:")
-        print(f"  {str(e)}")
-        print("\nPor favor verifique que:")
-        print("1. MySQL esté instalado y ejecutándose")
-        print("2. La base de datos 'sgi_tci_mk' exista")
-        print("3. Las credenciales en el archivo .env sean correctas")
-        print("4. El usuario de MySQL tenga los permisos necesarios")
-        print("\nPuede crear la base de datos con:")
-        print(f"  CREATE DATABASE {db_name};")
-        return False
-    except Exception as e:
-        print(f"✗ Error inesperado al conectar a MySQL: {str(e)}")
-        return False
+
 
 def verificar_variables_entorno():
     """Verifica que las variables de entorno necesarias estén configuradas."""
-    variables_requeridas = ['DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'SECRET_KEY']
+    variables_requeridas = ['SECRET_KEY']
     variables_faltantes = []
     
     for var in variables_requeridas:
@@ -126,12 +91,6 @@ def main():
     
     # Verificar variables de entorno
     if not verificar_variables_entorno():
-        sys.exit(1)
-    
-    print()
-    
-    # Verificar conexión a MySQL
-    if not verificar_mysql():
         sys.exit(1)
     
     print()

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte Financiero</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #0066cc;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #0066cc;
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .header h2 {
+            color: #666;
+            margin: 5px 0 0 0;
+            font-size: 16px;
+        }
+        
+        .periodo {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .resumen-cards {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            gap: 15px;
+        }
+        
+        .card {
+            flex: 1;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .card-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .card-danger {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .card-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .card-primary {
+            background-color: #cce5ff;
+            border: 1px solid #b8daff;
+        }
+        
+        .card h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .card .amount {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .card .count {
+            font-size: 11px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section h3 {
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin: 0 0 15px 0;
+            border-left: 4px solid #0066cc;
+            font-size: 14px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        table th {
+            background-color: #0066cc;
+            color: white;
+            padding: 8px;
+            text-align: left;
+            font-size: 11px;
+        }
+        
+        table td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            font-size: 11px;
+        }
+        
+        table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .resumen-table {
+            margin-top: 20px;
+        }
+        
+        .resumen-table tr:last-child {
+            background-color: #cce5ff;
+            font-weight: bold;
+        }
+        
+        .margen-utilidad {
+            background-color: #d4edda;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .margen-utilidad h4 {
+            margin: 0 0 10px 0;
+            color: #155724;
+        }
+        
+        .margen-utilidad .percentage {
+            font-size: 36px;
+            font-weight: bold;
+            color: #155724;
+            margin: 0;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 10px;
+            color: #999;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        
+        .page-break {
+            page-break-before: always;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>SGI-TCI MK</h1>
+        <h2>Sistema de Gestión de Inventario - Miscelánea Karen</h2>
+    </div>
+    
+    <div class="periodo">
+        Reporte Financiero del {{ fecha_inicio.strftime('%d/%m/%Y') }} al {{ fecha_fin.strftime('%d/%m/%Y') }}
+    </div>
+    
+    <div class="resumen-cards">
+        <div class="card card-success">
+            <h3>Total Ingresos</h3>
+            <p class="amount">${{ "{:,.2f}".format(total_ventas) }}</p>
+            <p class="count">{{ ventas|length }} ventas</p>
+        </div>
+        
+        <div class="card card-danger">
+            <h3>Total Costos</h3>
+            <p class="amount">${{ "{:,.2f}".format(total_costos) }}</p>
+        </div>
+        
+        <div class="card card-warning">
+            <h3>Total Egresos</h3>
+            <p class="amount">${{ "{:,.2f}".format(total_egresos) }}</p>
+            <p class="count">{{ egresos|length }} egresos</p>
+        </div>
+        
+        <div class="card card-primary">
+            <h3>Utilidad Real</h3>
+            <p class="amount">${{ "{:,.2f}".format(utilidad_real) }}</p>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h3>Ventas en el Período ({{ ventas|length }})</h3>
+        {% if ventas %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Vendedor</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for venta in ventas %}
+                        <tr>
+                            <td>{{ venta.id }}</td>
+                            <td>{{ venta.fecha_hora.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>{{ venta.usuario.nombre_completo or venta.usuario.username }}</td>
+                            <td>${{ "{:,.2f}".format(venta.total) }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No hay ventas en el período seleccionado.</p>
+        {% endif %}
+    </div>
+    
+    <div class="section">
+        <h3>Egresos en el Período ({{ egresos|length }})</h3>
+        {% if egresos %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Descripción</th>
+                        <th>Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for egreso in egresos %}
+                        <tr>
+                            <td>{{ egreso.id }}</td>
+                            <td>{{ egreso.fecha_hora.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>{{ egreso.descripcion }}</td>
+                            <td>${{ "{:,.2f}".format(egreso.monto) }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No hay egresos en el período seleccionado.</p>
+        {% endif %}
+    </div>
+    
+    <div class="section">
+        <h3>Resumen Financiero</h3>
+        <table class="resumen-table">
+            <tr>
+                <td><strong>Período:</strong></td>
+                <td>{{ fecha_inicio.strftime('%d/%m/%Y') }} - {{ fecha_fin.strftime('%d/%m/%Y') }}</td>
+            </tr>
+            <tr>
+                <td><strong>Total Ingresos:</strong></td>
+                <td>${{ "{:,.2f}".format(total_ventas) }}</td>
+            </tr>
+            <tr>
+                <td><strong>Total Costos de Productos:</strong></td>
+                <td>${{ "{:,.2f}".format(total_costos) }}</td>
+            </tr>
+            <tr>
+                <td><strong>Total Egresos:</strong></td>
+                <td>${{ "{:,.2f}".format(total_egresos) }}</td>
+            </tr>
+            <tr>
+                <td><strong>Utilidad Real:</strong></td>
+                <td>${{ "{:,.2f}".format(utilidad_real) }}</td>
+            </tr>
+        </table>
+        
+        <div class="margen-utilidad">
+            <h4>Margen de Utilidad</h4>
+            {% if total_ventas > 0 %}
+                <p class="percentage">{{ "%.2f"|format((utilidad_real / total_ventas) * 100) }}%</p>
+            {% else %}
+                <p class="percentage">0%</p>
+            {% endif %}
+            <p>Porcentaje de utilidad sobre los ingresos totales.</p>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>Reporte generado el {{ datetime.now().strftime('%d/%m/%Y %H:%M:%S') }}</p>
+        <p>SGI-TCI MK - Sistema de Gestión de Inventario</p>
+    </div>
+</body>
+</html>

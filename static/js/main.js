@@ -87,6 +87,40 @@ function showAlert(message, type = 'info') {
     }
 }
 
+// Función para mostrar notificaciones/toasts (reemplazo de alert())
+function showNotification(message, type = 'success') {
+    const container = document.getElementById('notificationContainer');
+    if (!container) return;
+    
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} alert-dismissible fade show`;
+    notification.style.marginBottom = '10px';
+    notification.style.minWidth = '300px';
+    notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    
+    // Iconos según tipo
+    let icon = '';
+    if (type === 'success') icon = '<i class="bi bi-check-circle-fill me-2"></i>';
+    else if (type === 'danger') icon = '<i class="bi bi-exclamation-triangle-fill me-2"></i>';
+    else if (type === 'warning') icon = '<i class="bi bi-exclamation-circle-fill me-2"></i>';
+    else icon = '<i class="bi bi-info-circle-fill me-2"></i>';
+    
+    notification.innerHTML = `
+        ${icon}${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    container.appendChild(notification);
+    
+    // Auto cerrar después de 4 segundos
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            notification.remove();
+        }, 150);
+    }, 4000);
+}
+
 // Función para validar campos numéricos
 function validateNumberInput(input, min = 0, max = Infinity) {
     const value = parseFloat(input.value);

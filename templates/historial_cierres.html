@@ -37,11 +37,11 @@
                                         <td>{{ cierre.id }}</td>
                                         <td>{{ cierre.fecha.strftime('%d/%m/%Y') }}</td>
                                         <td>{{ cierre.usuario.nombre_completo or cierre.usuario.username }}</td>
-                                        <td class="text-success">${{ "%.2f"|format(cierre.total_ventas) }}</td>
-                                        <td class="text-danger">${{ "%.2f"|format(cierre.total_costos) }}</td>
-                                        <td class="text-warning">${{ "%.2f"|format(cierre.total_egresos) }}</td>
+                                        <td class="text-success">{{ cierre.total_ventas|moneda }}</td>
+                                        <td class="text-danger">{{ cierre.total_costos|moneda }}</td>
+                                        <td class="text-warning">{{ cierre.total_egresos|moneda }}</td>
                                         <td class="fw-bold {% if cierre.utilidad_real >= 0 %}text-primary{% else %}text-danger{% endif %}">
-                                            ${{ "%.2f"|format(cierre.utilidad_real) }}
+                                            {{ cierre.utilidad_real|moneda }}
                                         </td>
                                         <td>{{ cierre.fecha_hora_cierre.strftime('%d/%m/%Y %H:%M') }}</td>
                                     </tr>

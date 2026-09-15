@@ -13,18 +13,9 @@ def create_app():
     # Configuración
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
     
-    # Configuración de base de datos MySQL
-    db_host = os.getenv('DB_HOST', 'localhost')
-    db_port = os.getenv('DB_PORT', '3306')
-    db_name = os.getenv('DB_NAME', 'sgi_tci_mk')
-    db_user = os.getenv('DB_USER', 'root')
-    db_password = os.getenv('DB_PASSWORD', '')
-    
-    # URL codificada para manejar caracteres especiales en contraseña
-    from urllib.parse import quote_plus
-    encoded_password = quote_plus(db_password)
-    
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+mysqlconnector://{db_user}:{encoded_password}@{db_host}:{db_port}/{db_name}'
+    # Configuración de base de datos SQLite
+    db_path = os.path.join(os.path.dirname(__file__), 'sgi_tci_mk.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
     # Inicializar extensión de base de datos
@@ -61,21 +52,32 @@ def create_app():
     from functools import wraps
     from flask import abort, flash, redirect, url_for
     
-    def requiere_rol(rol_requerido):
+    def requiere_rol(*roles_requeridos):
+        """
+        Decorador para verificar que el usuario tenga uno de los roles requeridos.
+        Puede aceptar un solo rol o múltiples roles.
+        """
         def decorator(f):
             @wraps(f)
             def decorated_function(*args, **kwargs):
                 if not current_user.is_authenticated:
                     return redirect(url_for('auth.login'))
-                if current_user.rol != rol_requerido:
+                
+                if current_user.rol not in roles_requeridos:
                     flash('No tienes permiso para acceder a esta página.', 'danger')
                     return redirect(url_for('auth.dashboard'))
+                
                 return f(*args, **kwargs)
             return decorated_function
         return decorator
     
-    # Hacer el decorador disponible globalmente
+    # Decorador para solo administrador (shortcut)
+    def solo_admin(f):
+        return requiere_rol('administrador')(f)
+    
+    # Hacer los decoradores disponibles globalmente
     app.requiere_rol = requiere_rol
+    app.solo_admin = solo_admin
     
     # Before request para validar contraseña vencida
     @app.before_request

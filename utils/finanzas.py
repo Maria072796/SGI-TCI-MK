@@ -1,4 +1,4 @@
-from models import Venta, DetalleVenta, Egreso, Producto, CierreCaja
+from models import db, Venta, DetalleVenta, Egreso, Producto, CierreCaja
 from datetime import datetime, date
 from decimal import Decimal
 from sqlalchemy import func

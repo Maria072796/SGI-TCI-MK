@@ -3,57 +3,111 @@
 {% block title %}Inicio - SGI-TCI MK{% endblock %}
 
 {% block content %}
+<style>
+.stat-card .lbl {
+    color: #5C6B7A !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    white-space: normal !important;
+    text-align: left !important;
+}
+.stat-card .val {
+    color: #0B3C5D !important;
+    font-size: 28px !important;
+    font-weight: 600 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    white-space: normal !important;
+    text-align: left !important;
+}
+.stat-card .content {
+    color: #1F2937 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+</style>
 <div class="container-fluid p-0">
     <h2 class="mb-4">Inicio</h2>
+    
+    <!-- Alerta de stock bajo -->
+    {% if productos_bajo_stock and productos_bajo_stock|length > 0 %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <strong>⚠️ Productos con stock bajo:</strong>
+        <ul class="mb-0 mt-2">
+            {% for producto in productos_bajo_stock %}
+            <li>{{ producto.nombre }} - Stock actual: {{ producto.stock_actual }} (Mínimo: {{ producto.stock_minimo }})</li>
+            {% endfor %}
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
     
     <!-- Tarjetas de estadísticas -->
     <div class="row g-3 mb-4">
         {% if current_user.rol == 'administrador' %}
             <!-- Dashboard Administradora -->
             <div class="col-12 col-md-6 col-lg-3">
-                <a href="{{ url_for('auth.listar_usuarios') }}" class="stat-card">
-                    <div class="ico bg-azul-600">
-                        <i class="bi bi-people"></i>
-                    </div>
-                    <div class="content">
-                        <div class="val">{{ total_admins + total_vendedores }}</div>
-                        <div class="lbl">Usuarios</div>
-                    </div>
-                </a>
-            </div>
-            
-            <div class="col-12 col-md-6 col-lg-3">
-                <a href="{{ url_for('inventario.listar') }}" class="stat-card">
-                    <div class="ico bg-azul-400">
-                        <i class="bi bi-box-seam"></i>
-                    </div>
-                    <div class="content">
-                        <div class="val">{{ total_productos }}</div>
-                        <div class="lbl">Productos</div>
+                <a href="{{ url_for('auth.listar_usuarios') }}" class="card text-decoration-none text-dark">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="me-3" style="background: var(--mk-azul-600); width: 60px; height: 60px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <div>
+                            <div class="h3 mb-0" style="color: #0B3C5D;">{{ total_admins + total_vendedores }}</div>
+                            <div class="text-muted" style="color: #5C6B7A;">Usuarios</div>
+                        </div>
                     </div>
                 </a>
             </div>
             
             <div class="col-12 col-md-6 col-lg-3">
-                <a href="{{ url_for('inventario.listar') }}" class="stat-card">
-                    <div class="ico bg-rosa-600">
-                        <i class="bi bi-exclamation-triangle"></i>
-                    </div>
-                    <div class="content">
-                        <div class="val">{{ productos_bajo_stock }}</div>
-                        <div class="lbl">Bajo stock</div>
+                <a href="{{ url_for('inventario.listar') }}" class="card text-decoration-none text-dark">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="me-3" style="background: var(--mk-azul-400); width: 60px; height: 60px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+                        <div>
+                            <div class="h3 mb-0" style="color: #0B3C5D;">{{ total_productos }}</div>
+                            <div class="text-muted" style="color: #5C6B7A;">Inventario</div>
+                        </div>
                     </div>
                 </a>
             </div>
             
             <div class="col-12 col-md-6 col-lg-3">
-                <a href="{{ url_for('ventas.listar') }}" class="stat-card">
-                    <div class="ico bg-azul-900">
-                        <i class="bi bi-cart"></i>
+                <a href="{{ url_for('inventario.consultar_stock') }}" class="card text-decoration-none text-dark">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="me-3" style="background: {% if productos_bajo_stock|length > 0 %}var(--mk-rosa-600){% else %}#28a745{% endif %}; width: 60px; height: 60px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <div class="h3 mb-0" style="color: #0B3C5D;">{{ productos_bajo_stock|length }}</div>
+                            <div class="text-muted" style="color: #5C6B7A;">
+                                {% if productos_bajo_stock|length > 0 %}
+                                    Alerta Stock
+                                {% else %}
+                                    Stock OK
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
-                    <div class="content">
-                        <div class="val">{{ ventas_hoy }}</div>
-                        <div class="lbl">Ventas hoy</div>
+                </a>
+            </div>
+            
+            <div class="col-12 col-md-6 col-lg-3">
+                <a href="{{ url_for('ventas.listar') }}" class="card text-decoration-none text-dark">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="me-3" style="background: var(--mk-azul-900); width: 60px; height: 60px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">
+                            <i class="bi bi-cart"></i>
+                        </div>
+                        <div>
+                            <div class="h3 mb-0" style="color: #0B3C5D;">{{ ventas_hoy }}</div>
+                            <div class="text-muted" style="color: #5C6B7A;">Ventas</div>
+                        </div>
                     </div>
                 </a>
             </div>
@@ -77,14 +131,14 @@
                         <i class="bi bi-currency-dollar"></i>
                     </div>
                     <div class="content">
-                        <div class="val">${{ total_vendido_hoy|moneda }}</div>
+                        <div class="val">{{ total_vendido_hoy|moneda }}</div>
                         <div class="lbl">Total vendido hoy</div>
                     </div>
                 </a>
             </div>
             
             <div class="col-12 col-md-4">
-                <a href="{{ url_for('inventario.listar') }}" class="stat-card">
+                <a href="{{ url_for('inventario.consultar_stock') }}" class="stat-card">
                     <div class="ico bg-azul-900">
                         <i class="bi bi-box-seam"></i>
                     </div>
@@ -108,6 +162,7 @@
                         Productos más vendidos
                     </div>
                     <div class="panel-body">
+                        {% if productos_mas_vendidos %}
                         <div class="table-responsive">
                             <table class="table table-sm">
                                 <thead>
@@ -118,24 +173,19 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    {% for producto in productos_mas_vendidos %}
                                     <tr>
-                                        <td>Producto A</td>
-                                        <td class="text-right">15</td>
-                                        <td class="text-right">$45.000</td>
+                                        <td>{{ producto[0] }}</td>
+                                        <td class="text-right">{{ producto[1] }}</td>
+                                        <td class="text-right">{{ producto[2]|moneda }}</td>
                                     </tr>
-                                    <tr>
-                                        <td>Producto B</td>
-                                        <td class="text-right">12</td>
-                                        <td class="text-right">$36.000</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Producto C</td>
-                                        <td class="text-right">8</td>
-                                        <td class="text-right">$24.000</td>
-                                    </tr>
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>
+                        {% else %}
+                        <p class="text-muted text-center">Aún no hay ventas registradas</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -147,42 +197,34 @@
                         Últimas ventas
                     </div>
                     <div class="panel-body">
+                        {% if ultimas_ventas %}
                         <div class="table-responsive">
                             <table class="table table-sm">
                                 <thead>
                                     <tr>
                                         <th>#</th>
                                         <th>Vendedor</th>
-                                        <th>Fecha</th>
+                                        <th>Hora</th>
                                         <th class="text-right">Total</th>
                                         <th>Estado</th>
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    {% for venta in ultimas_ventas %}
                                     <tr>
-                                        <td>124</td>
-                                        <td>Vendedor</td>
-                                        <td>12:30</td>
-                                        <td class="text-right">$15.000</td>
-                                        <td><span class="estado-confirmada">Confirmada</span></td>
+                                        <td>{{ venta.id }}</td>
+                                        <td>{{ venta.usuario.nombre_completo or venta.usuario.username }}</td>
+                                        <td>{{ venta.fecha_hora.strftime('%H:%M') }}</td>
+                                        <td class="text-right">{{ venta.total|moneda }}</td>
+                                        <td><span class="estado-{{ venta.estado }}">{{ venta.estado|capitalize }}</span></td>
                                     </tr>
-                                    <tr>
-                                        <td>123</td>
-                                        <td>Vendedor</td>
-                                        <td>11:45</td>
-                                        <td class="text-right">$22.000</td>
-                                        <td><span class="estado-confirmada">Confirmada</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>122</td>
-                                        <td>Vendedor</td>
-                                        <td>10:15</td>
-                                        <td class="text-right">$8.000</td>
-                                        <td><span class="estado-anulada">Anulada</span></td>
-                                    </tr>
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>
+                        {% else %}
+                        <p class="text-muted text-center">Aún no hay ventas registradas</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -194,22 +236,17 @@
                         Productos con stock bajo
                     </div>
                     <div class="panel-body">
-                        {% if productos_bajo_stock > 0 %}
+                        {% if productos_bajo_stock|length > 0 %}
                         <div class="list-group">
+                            {% for producto in productos_bajo_stock %}
                             <div class="list-group-item d-flex justify-content-between align-items-center">
                                 <div>
-                                    <strong>Producto A</strong>
-                                    <div class="text-muted small">Stock: 2 / Mínimo: 5</div>
+                                    <strong>{{ producto.nombre }}</strong>
+                                    <div class="text-muted small">Stock: {{ producto.stock_actual }} / Mínimo: {{ producto.stock_minimo }}</div>
                                 </div>
-                                <button class="btn btn-sm btn-primary">Reabastecer</button>
+                                <button class="btn btn-sm btn-primary" onclick="reabastecerProducto({{ producto.id }})">Reabastecer</button>
                             </div>
-                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>Producto B</strong>
-                                    <div class="text-muted small">Stock: 3 / Mínimo: 8</div>
-                                </div>
-                                <button class="btn btn-sm btn-primary">Reabastecer</button>
-                            </div>
+                            {% endfor %}
                         </div>
                         {% else %}
                         <p class="text-muted">No hay productos con stock bajo.</p>
@@ -314,4 +351,10 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+function reabastecerProducto(productoId) {
+    window.location.href = `/gastos/crear?reabastecer_producto=${productoId}`;
+}
+</script>
 {% endblock %}

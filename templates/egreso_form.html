@@ -4,7 +4,7 @@
 <div class="row">
     <div class="col-12">
         <h2 class="mb-4">
-            {% if action == 'crear' %}Registrar Nuevo Egreso{% else %}Editar Egreso{% endif %}
+            {% if action == 'crear' %}Registrar Nuevo Gasto{% else %}Editar Gasto{% endif %}
         </h2>
     </div>
 </div>
@@ -13,41 +13,125 @@
     <div class="col-lg-8">
         <div class="card">
             <div class="card-body">
-                <form method="POST">
+                <form method="POST" id="gastoForm">
                     <div class="mb-3">
+                        <label for="tipo_gasto" class="form-label">Tipo de gasto *</label>
+                        <select class="form-select" id="tipo_gasto" name="tipo_gasto" onchange="cambiarTipoGasto()" required>
+                            <option value="">Seleccione tipo de gasto...</option>
+                            <option value="servicios_publicos">Servicios públicos</option>
+                            <option value="arriendo">Arriendo</option>
+                            <option value="nomina">Nómina</option>
+                            <option value="compra_insumos" {% if producto_reabastecer %}selected{% endif %}>Compra de productos e insumos</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Campo descripción siempre visible (se llena automático para compra insumos) -->
+                    <div class="mb-3" id="campoDescripcion">
                         <label for="descripcion" class="form-label">Descripción *</label>
                         <input type="text" class="form-control" id="descripcion" name="descripcion" 
                                value="{{ egreso.descripcion if egreso else '' }}" required>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="monto" class="form-label">Monto *</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" class="form-control" id="monto" name="monto" 
-                                   step="0.01" min="0" value="{{ egreso.monto if egreso else '' }}" required>
+                    <!-- Formulario simple para gastos normales -->
+                    <div id="formularioSimple">
+                        <div class="mb-3">
+                            <label for="monto" class="form-label">Monto *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="monto" name="monto" 
+                                       step="0.01" min="0" value="{{ egreso.monto if egreso else '' }}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3" id="campoOtroTipo" style="display: none;">
+                            <label for="otro_detalle" class="form-label">Especifique el tipo</label>
+                            <input type="text" class="form-control" id="otro_detalle" name="otro_detalle" 
+                                   placeholder="Ej: Limpieza, Mantenimiento, etc.">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="observaciones" class="form-label">Observaciones</label>
+                            <textarea class="form-control" id="observaciones" name="observaciones" rows="3">{{ egreso.observaciones if egreso else '' }}</textarea>
                         </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="categoria" class="form-label">Categoría</label>
-                        <input type="text" class="form-control" id="categoria" name="categoria" 
-                               value="{{ egreso.categoria if egreso else '' }}" 
-                               placeholder="Ej: Servicios, Suministros, etc.">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="observaciones" class="form-label">Observaciones</label>
-                        <textarea class="form-control" id="observaciones" name="observaciones" rows="3">{{ egreso.observaciones if egreso else '' }}</textarea>
+                    <!-- Formulario de carrito para compra de insumos -->
+                    <div id="formularioCarrito" style="display: none;">
+                        <div class="mb-3">
+                            <label for="productoBusqueda" class="form-label">Buscar producto:</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="productoBusqueda" 
+                                       list="productosList" placeholder="Escribe para buscar..." autocomplete="off">
+                                <datalist id="productosList"></datalist>
+                                <button type="button" class="btn btn-primary" onclick="agregarProductoGasto()">
+                                    <i class="bi bi-plus"></i> Agregar
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="mostrarModalCrearProducto()">
+                                    <i class="bi bi-plus-circle"></i> Nuevo
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="carritoItemsGasto">
+                            <p class="text-muted">No hay productos en el carrito</p>
+                        </div>
+
+                        <div class="alert alert-info mt-3">
+                            <strong>Total del gasto:</strong> <span id="totalGasto">$0.00</span>
+                        </div>
                     </div>
                     
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-danger">
-                            {% if action == 'crear' %}Registrar Egreso{% else %}Actualizar Egreso{% endif %}
+                            {% if action == 'crear' %}Registrar Gasto{% else %}Actualizar Gasto{% endif %}
                         </button>
                         <a href="{{ url_for('egresos.listar') }}" class="btn btn-secondary">Cancelar</a>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para crear producto nuevo (FUERA del formulario principal) -->
+    <div class="modal fade" id="modalCrearProducto" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Crear nuevo producto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formCrearProducto">
+                        <div class="mb-3">
+                            <label for="nuevoProductoNombre" class="form-label">Nombre del producto *</label>
+                            <input type="text" class="form-control" id="nuevoProductoNombre" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="nuevoProductoCosto" class="form-label">Precio de costo *</label>
+                            <input type="number" class="form-control" id="nuevoProductoCosto" min="0" step="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="nuevoProductoVenta" class="form-label">Precio de venta *</label>
+                            <input type="number" class="form-control" id="nuevoProductoVenta" min="0" step="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="nuevoProductoCantidad" class="form-label">Cantidad a comprar *</label>
+                            <input type="number" class="form-control" id="nuevoProductoCantidad" min="1" step="1" value="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="nuevoProductoStockMinimo" class="form-label">Stock mínimo</label>
+                            <input type="number" class="form-control" id="nuevoProductoStockMinimo" min="0" step="1" value="5">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="crearProductoNuevo()">Crear y agregar</button>
+                </div>
+            </div>
+        </div>
+    </div>
             </div>
         </div>
     </div>
@@ -60,24 +144,45 @@
             <div class="card-body">
                 <ul class="list-unstyled">
                     <li class="mb-2">
-                        <strong>Descripción:</strong> Descripción detallada del egreso (obligatorio).
+                        <strong>Tipo de gasto:</strong> Selecciona la categoría del gasto.
                     </li>
                     <li class="mb-2">
-                        <strong>Monto:</strong> Valor monetario del egreso (obligatorio).
+                        <strong>Compra de insumos:</strong> Permite agregar múltiples productos y actualiza el inventario automáticamente.
                     </li>
                     <li class="mb-2">
-                        <strong>Categoría:</strong> Clasificación del egreso para mejor organización (opcional).
-                    </li>
-                    <li class="mb-2">
-                        <strong>Observaciones:</strong> Notas adicionales sobre el egreso (opcional).
+                        <strong>Otros gastos:</strong> Solo registran el monto sin afectar el inventario.
                     </li>
                 </ul>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<script src="{{ url_for('static', filename='js/gastos.js') }}"></script>
+{% if producto_reabastecer %}
+<script>
+// Producto para reabastecer pre-cargado
+const productoReabastecer = {
+    id: {{ producto_reabastecer.id }},
+    nombre: "{{ producto_reabastecer.nombre }}",
+    precio_costo: {{ producto_reabastecer.precio_costo }},
+    precio_venta: {{ producto_reabastecer.precio_venta }},
+    stock_actual: {{ producto_reabastecer.stock_actual }}
+};
+
+// Agregar al carrito automáticamente cuando cargue la página
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        productosCarritoGasto.push({
+            producto_id: productoReabastecer.id,
+            nombre: productoReabastecer.nombre,
+            precio_costo: productoReabastecer.precio_costo,
+            cantidad: 1,
+            subtotal: productoReabastecer.precio_costo
+        });
+        actualizarCarritoGasto();
+    }, 500); // Pequeño delay para asegurar que el JS esté cargado
+});
+</script>
+{% endif %}
 {% endblock %}

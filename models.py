@@ -94,6 +94,7 @@ class Egreso(db.Model):
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
     observaciones = db.Column(db.Text)
     activo = db.Column(db.Boolean, default=True)  # [NUEVO] Para eliminación lógica
+    productos_json = db.Column(db.Text)  # [NUEVO] Para guardar detalles de compra de insumos (JSON)
     
     usuario = db.relationship('Usuario', backref='egresos')
     
