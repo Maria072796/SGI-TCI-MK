@@ -13,10 +13,26 @@ def create_app():
     # Configuración
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
     
-    # Configuración de base de datos SQLite
-    db_path = os.path.join(os.path.dirname(__file__), 'sgi_tci_mk.db')
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    # Configuración de base de datos: usa MySQL si hay 
+    variables DB_HOST configuradas 
+    # (como en Railway), o SQLite local si no las hay 
+    (para desarrollo sin configurar nada)
+    db_host = os.getenv('DB_HOST')
+    if db_host:
+        db_user = os.getenv('DB_USER') 
+        db_password = os.getenv('DB_PASSWORD') 
+        db_port = os.getenv('DB_PORT', '3306') 
+        db_name = os.getenv('DB_NAME') 
+        app.config['SQLALCHEMY_DATABASE_URI'] = ( f'mysql+mysqlconnector://{db_user}:
+        {db_password}@{db_host}:{db_port}/{db_name}'
+                                                ) 
+    else:
+        db_path = 
+    os.path.join(os.path.dirname(__file__),
+    'sgi_tci_mk.db') 
+        app.config['SQLALCHEMY_DATABASE_URI'] = 
+    f'sqlite:///{db_path}' app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = 
+    False
     
     # Inicializar extensión de base de datos
     db.init_app(app)
