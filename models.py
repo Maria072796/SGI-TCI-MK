@@ -14,8 +14,8 @@ class Usuario(UserMixin, db.Model):
     rol = db.Column(db.String(20), nullable=False)  # 'administrador' or 'vendedor'
     nombre_completo = db.Column(db.String(100))
     activo = db.Column(db.Boolean, default=True)
-    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
-    fecha_cambio_password = db.Column(db.DateTime, default=datetime.utcnow)  # [NUEVO]
+    fecha_creacion = db.Column(db.DateTime, default=datetime.now)
+    fecha_cambio_password = db.Column(db.DateTime, default=datetime.now)  # [NUEVO]
     debe_cambiar_password = db.Column(db.Boolean, default=False)  # [NUEVO]
     
     ventas = db.relationship('Venta', foreign_keys='Venta.usuario_id', backref='usuario', lazy=True)
@@ -23,7 +23,7 @@ class Usuario(UserMixin, db.Model):
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
-        self.fecha_cambio_password = datetime.utcnow()
+        self.fecha_cambio_password = datetime.now()
         self.debe_cambiar_password = False
     
     def check_password(self, password):
@@ -43,8 +43,8 @@ class Producto(db.Model):
     stock_actual = db.Column(db.Integer, default=0)
     stock_minimo = db.Column(db.Integer, default=0)
     activo = db.Column(db.Boolean, default=True)
-    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
-    fecha_actualizacion = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    fecha_creacion = db.Column(db.DateTime, default=datetime.now)
+    fecha_actualizacion = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
     detalles_venta = db.relationship('DetalleVenta', backref='producto', lazy=True)
     
@@ -56,7 +56,7 @@ class Venta(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
-    fecha_hora = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    fecha_hora = db.Column(db.DateTime, default=datetime.now, nullable=False)
     estado = db.Column(db.String(20), default='confirmada')  # 'confirmada' or 'anulada'
     total = db.Column(db.Numeric(10, 2), nullable=False)
     observaciones = db.Column(db.Text)
@@ -90,10 +90,11 @@ class Egreso(db.Model):
     descripcion = db.Column(db.String(200), nullable=False)
     monto = db.Column(db.Numeric(10, 2), nullable=False)
     categoria = db.Column(db.String(50))
-    fecha_hora = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    fecha_hora = db.Column(db.DateTime, default=datetime.now, nullable=False)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
     observaciones = db.Column(db.Text)
     activo = db.Column(db.Boolean, default=True)  # [NUEVO] Para eliminación lógica
+    productos_json = db.Column(db.Text)  # [NUEVO] Para guardar detalles de compra de insumos (JSON)
     
     usuario = db.relationship('Usuario', backref='egresos')
     
@@ -110,7 +111,7 @@ class CierreCaja(db.Model):
     total_egresos = db.Column(db.Numeric(10, 2), nullable=False)
     total_costos = db.Column(db.Numeric(10, 2), nullable=False)
     utilidad_real = db.Column(db.Numeric(10, 2), nullable=False)
-    fecha_hora_cierre = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    fecha_hora_cierre = db.Column(db.DateTime, default=datetime.now, nullable=False)
     observaciones = db.Column(db.Text)
     tipo = db.Column(db.String(10), default='dia')  # 'turno' or 'dia'
     cantidad_ventas = db.Column(db.Integer, default=0)  # [NUEVO]

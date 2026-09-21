@@ -41,11 +41,11 @@
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <p class="h5">Total de Ventas</p>
-                            <p class="total-mk">${{ cierre.total_ventas|moneda }}</p>
+                            <p class="total-mk">{{ cierre.total_ventas|moneda }}</p>
                         </div>
                         <div class="col-md-6">
                             <p class="h5">Total de Costos</p>
-                            <p class="total-mk">${{ cierre.total_costos|moneda }}</p>
+                            <p class="total-mk">{{ cierre.total_costos|moneda }}</p>
                         </div>
                     </div>
 
@@ -53,11 +53,11 @@
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <p class="h5">Total de Gastos</p>
-                            <p class="total-mk">${{ cierre.total_egresos|moneda }}</p>
+                            <p class="total-mk">{{ cierre.total_egresos|moneda }}</p>
                         </div>
                         <div class="col-md-6">
                             <p class="h5">Utilidad Real</p>
-                            <p class="total-mk">${{ cierre.utilidad_real|moneda }}</p>
+                            <p class="total-mk">{{ cierre.utilidad_real|moneda }}</p>
                         </div>
                     </div>
                     {% endif %}

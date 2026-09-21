@@ -2,6 +2,7 @@ from flask import Flask, request, session
 from flask_login import LoginManager, current_user
 from dotenv import load_dotenv
 import os
+from datetime import timedelta
 from models import db, Usuario
 from utils.seguridad import password_vencida, password_pronto_vencer
 
@@ -13,18 +14,20 @@ def create_app():
     # Configuración
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
     
-    # Configuración de base de datos MySQL
-    db_host = os.getenv('DB_HOST', 'localhost')
-    db_port = os.getenv('DB_PORT', '3306')
-    db_name = os.getenv('DB_NAME', 'sgi_tci_mk')
-    db_user = os.getenv('DB_USER', 'root')
-    db_password = os.getenv('DB_PASSWORD', '')
-    
-    # URL codificada para manejar caracteres especiales en contraseña
-    from urllib.parse import quote_plus
-    encoded_password = quote_plus(db_password)
-    
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+mysqlconnector://{db_user}:{encoded_password}@{db_host}:{db_port}/{db_name}'
+    # Configuración de base de datos: usa MySQL si hay variables DB_HOST configuradas
+    # (como en Railway), o SQLite local si no las hay (para desarrollo sin configurar nada)
+    db_host = os.getenv('DB_HOST')
+    if db_host:
+        db_user = os.getenv('DB_USER')
+        db_password = os.getenv('DB_PASSWORD')
+        db_port = os.getenv('DB_PORT', '3306')
+        db_name = os.getenv('DB_NAME')
+        app.config['SQLALCHEMY_DATABASE_URI'] = (
+            f'mysql+mysqlconnector://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
+        )
+    else:
+        db_path = os.path.join(os.path.dirname(__file__), 'sgi_tci_mk.db')
+        app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
     # Inicializar extensión de base de datos
@@ -35,6 +38,10 @@ def create_app():
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
     login_manager.login_message = 'Por favor inicia sesión para acceder a esta página.'
+    
+    # Configurar tiempo de sesión a 1.5 minutos (90 segundos)
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(seconds=90)
+    app.config['SESSION_REFRESH_EACH_REQUEST'] = True
     
     @login_manager.user_loader
     def load_user(user_id):
@@ -61,21 +68,32 @@ def create_app():
     from functools import wraps
     from flask import abort, flash, redirect, url_for
     
-    def requiere_rol(rol_requerido):
+    def requiere_rol(*roles_requeridos):
+        """
+        Decorador para verificar que el usuario tenga uno de los roles requeridos.
+        Puede aceptar un solo rol o múltiples roles.
+        """
         def decorator(f):
             @wraps(f)
             def decorated_function(*args, **kwargs):
                 if not current_user.is_authenticated:
                     return redirect(url_for('auth.login'))
-                if current_user.rol != rol_requerido:
+                
+                if current_user.rol not in roles_requeridos:
                     flash('No tienes permiso para acceder a esta página.', 'danger')
                     return redirect(url_for('auth.dashboard'))
+                
                 return f(*args, **kwargs)
             return decorated_function
         return decorator
     
-    # Hacer el decorador disponible globalmente
+    # Decorador para solo administrador (shortcut)
+    def solo_admin(f):
+        return requiere_rol('administrador')(f)
+    
+    # Hacer los decoradores disponibles globalmente
     app.requiere_rol = requiere_rol
+    app.solo_admin = solo_admin
     
     # Before request para validar contraseña vencida
     @app.before_request
@@ -107,7 +125,7 @@ def create_app():
 app = create_app()
 
 if __name__ == '__main__':
-    # Leer puerto desde variable de entorno (Railway) o usar 5000 localmente
-    port = int(os.getenv('PORT', 5000))
+    # Leer puerto desde variable de entorno (Railway) o usar 5001 localmente
+    port = int(os.getenv('PORT', 5001))
     debug = os.getenv('FLASK_DEBUG', 'True').lower() == 'true'
     app.run(debug=debug, host='0.0.0.0', port=port)

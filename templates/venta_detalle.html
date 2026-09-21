@@ -64,8 +64,8 @@
                                 <tr>
                                     <td>{{ detalle.producto.nombre }}</td>
                                     <td>{{ detalle.cantidad }}</td>
-                                    <td>${{ "%.2f"|format(detalle.precio_unitario) }}</td>
-                                    <td>${{ "%.2f"|format(detalle.subtotal) }}</td>
+                                    <td>{{ detalle.precio_unitario|moneda }}</td>
+                                    <td>{{ detalle.subtotal|moneda }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -100,13 +100,37 @@
                 {% if venta.estado == 'confirmada' %}
                     {% if current_user.rol == 'administrador' or venta.usuario_id == current_user.id %}
                         <hr>
-                        <form action="{{ url_for('ventas.anular', id=venta.id) }}" method="POST">
-                            <button type="submit" class="btn btn-danger w-100" onclick="return confirm('¿Está seguro de anular esta venta? El stock será revertido.')">
-                                <i class="bi bi-x-circle"></i> Anular Venta
-                            </button>
-                        </form>
+                        <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#modalAnularVenta">
+                            <i class="bi bi-x-circle"></i> Anular Venta
+                        </button>
                     {% endif %}
                 {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para anular venta -->
+<div class="modal fade" id="modalAnularVenta" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Anular Venta #{{ venta.id }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro de anular esta venta? El stock será revertido.</p>
+                <div class="mb-3">
+                    <label for="motivoAnulacion" class="form-label">Motivo:</label>
+                    <textarea class="form-control" id="motivoAnulacion" rows="3" required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form action="{{ url_for('ventas.anular', id=venta.id) }}" method="POST">
+                    <input type="hidden" name="motivo" id="motivoForm">
+                    <button type="submit" class="btn btn-danger">Confirmar anulación</button>
+                </form>
             </div>
         </div>
     </div>
@@ -115,4 +139,10 @@
 
 {% block scripts %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<script>
+    // Sincronizar motivo de anulación
+    document.getElementById('motivoAnulacion').addEventListener('input', function() {
+        document.getElementById('motivoForm').value = this.value;
+    });
+</script>
 {% endblock %}

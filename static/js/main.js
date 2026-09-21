@@ -1,7 +1,7 @@
 // Funciones generales de JavaScript para la aplicación
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Auto-cerrar alertas después de 5 segundos
+    // Auto-cerrar alertas después de 1.5 minutos (90 segundos)
     const alerts = document.querySelectorAll('.alert');
     alerts.forEach(alert => {
         setTimeout(() => {
@@ -9,18 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 alert.remove();
             }, 150);
-        }, 5000);
-    });
-    
-    // Confirmación para formularios de eliminación
-    const deleteForms = document.querySelectorAll('form[data-confirm]');
-    deleteForms.forEach(form => {
-        form.addEventListener('submit', function(e) {
-            const message = this.getAttribute('data-confirm');
-            if (!confirm(message)) {
-                e.preventDefault();
-            }
-        });
+        }, 90000);
     });
     
     // Formateo de números
@@ -83,8 +72,42 @@ function showAlert(message, type = 'info') {
             setTimeout(() => {
                 alertDiv.remove();
             }, 150);
-        }, 5000);
+        }, 90000);
     }
+}
+
+// Función para mostrar notificaciones/toasts (reemplazo de alert())
+function showNotification(message, type = 'success') {
+    const container = document.getElementById('notificationContainer');
+    if (!container) return;
+    
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} alert-dismissible fade show`;
+    notification.style.marginBottom = '10px';
+    notification.style.minWidth = '300px';
+    notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    
+    // Iconos según tipo
+    let icon = '';
+    if (type === 'success') icon = '<i class="bi bi-check-circle-fill me-2"></i>';
+    else if (type === 'danger') icon = '<i class="bi bi-exclamation-triangle-fill me-2"></i>';
+    else if (type === 'warning') icon = '<i class="bi bi-exclamation-circle-fill me-2"></i>';
+    else icon = '<i class="bi bi-info-circle-fill me-2"></i>';
+    
+    notification.innerHTML = `
+        ${icon}${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    container.appendChild(notification);
+    
+    // Auto cerrar después de 1.5 minutos (90 segundos)
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            notification.remove();
+        }, 150);
+    }, 90000);
 }
 
 // Función para validar campos numéricos

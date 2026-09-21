@@ -148,7 +148,7 @@ body {
   display: flex;
   overflow: hidden;
   text-decoration: none;
-  color: inherit;
+  color: #1F2937;
   transition: all 0.2s ease;
   height: 80px;
 }
@@ -179,22 +179,41 @@ body {
 .stat-card .val {
   font-size: 28px;
   font-weight: 600;
-  color: var(--mk-azul-900);
-  line-height: 1;
+  color: #0B3C5D;
+  line-height: 1.2;
+  margin-bottom: 2px;
 }
 
 .stat-card .lbl {
-  font-size: 13px;
-  color: var(--mk-pizarra);
+  font-size: 14px;
+  color: #5C6B7A;
   margin-top: 4px;
+  font-weight: 500;
+  display: block;
+  text-align: left;
+  white-space: normal;
+  overflow: visible;
 }
 
 .bg-azul-600 { background: var(--mk-azul-600); }
 .bg-azul-400 { background: var(--mk-azul-400); }
 .bg-azul-900 { background: var(--mk-azul-900); }
 .bg-rosa-600 { background: var(--mk-rosa-600); }
+.bg-green-500 { background: #28a745; }
 
-/* Paneles */
+/* Input de cantidad en carrito de ventas */
+.cantidad-input {
+    -moz-appearance: textfield;
+}
+.cantidad-input::-webkit-outer-spin-button,
+.cantidad-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.cantidad-input {
+    text-align: center;
+    background-color: #f8f9fa;
+}
 .panel {
   background: #fff;
   border: 1px solid #E3E8EF;

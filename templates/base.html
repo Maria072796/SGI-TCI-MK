@@ -28,6 +28,11 @@
                     <span>Ventas</span>
                 </a>
                 
+                <a href="{{ url_for('inventario.consultar_stock') }}" class="nav-link {% if request.endpoint == 'inventario.consultar_stock' %}active{% endif %}">
+                    <i class="bi bi-box-seam"></i>
+                    <span>Stock</span>
+                </a>
+                
                 {% if current_user.rol == 'administrador' %}
                     <a href="{{ url_for('inventario.listar') }}" class="nav-link {% if request.endpoint and 'inventario' in request.endpoint %}active{% endif %}">
                         <i class="bi bi-box-seam"></i>
@@ -90,6 +95,9 @@
 
     <!-- Main Content -->
     <div class="content">
+        <!-- Contenedor para notificaciones/toasts -->
+        <div id="notificationContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+        
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}

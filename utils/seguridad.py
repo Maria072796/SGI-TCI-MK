@@ -36,7 +36,7 @@ def password_vencida(usuario):
     if not usuario.fecha_cambio_password:
         return (False, 180)
     
-    dias_pasados = (datetime.utcnow() - usuario.fecha_cambio_password).days
+    dias_pasados = (datetime.now() - usuario.fecha_cambio_password).days
     vencida = dias_pasados >= 180
     dias_restantes = 180 - dias_pasados
     

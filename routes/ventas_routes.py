@@ -11,19 +11,48 @@ ventas_bp = Blueprint('ventas', __name__, url_prefix='/ventas')
 @login_required
 def listar():
     """Lista ventas según el rol del usuario (RN-04)"""
-    if current_user.rol == 'vendedor':
-        # Vendedor solo ve sus propias ventas
-        ventas = Venta.query.filter_by(usuario_id=current_user.id).order_by(Venta.fecha_hora.desc()).all()
-    else:
-        # Administrador ve todas las ventas
-        ventas = Venta.query.order_by(Venta.fecha_hora.desc()).all()
+    filtro = request.args.get('filtro', 'hoy')
     
-    return render_template('ventas.html', ventas=ventas)
+    # Aplicar filtro de fecha
+    if filtro == 'hoy':
+        fecha_inicio = datetime.now().date()
+        fecha_fin = datetime.now().date()
+    elif filtro == 'semana':
+        from datetime import timedelta
+        fecha_inicio = datetime.now().date() - timedelta(days=7)
+        fecha_fin = datetime.now().date()
+    else:  # 'todas'
+        fecha_inicio = None
+        fecha_fin = None
+    
+    # Base query
+    ventas_query = Venta.query.filter_by(estado='confirmada')
+    
+    # Aplicar filtro de usuario según rol
+    if current_user.rol == 'vendedor':
+        ventas_query = ventas_query.filter_by(usuario_id=current_user.id)
+    
+    # Aplicar filtro de fecha
+    if fecha_inicio and fecha_fin:
+        ventas_query = ventas_query.filter(
+            func.date(Venta.fecha_hora) >= fecha_inicio,
+            func.date(Venta.fecha_hora) <= fecha_fin
+        )
+    
+    ventas = ventas_query.order_by(Venta.fecha_hora.desc()).all()
+    
+    return render_template('ventas.html', ventas=ventas, filtro=filtro)
 
 @ventas_bp.route('/crear', methods=['GET', 'POST'])
 @login_required
 def crear():
     """Crea una nueva venta siguiendo las reglas de negocio RN-03, RN-04, RN-05, RN-06"""
+    # Verificar si el usuario ya cerró caja hoy
+    from utils.finanzas import usuario_cerro_caja_hoy
+    if usuario_cerro_caja_hoy(current_user.id):
+        flash('Ya cerraste caja hoy. No podrás registrar más ventas hasta mañana.', 'warning')
+        return redirect(url_for('auth.dashboard'))
+    
     if request.method == 'POST':
         try:
             # Obtener datos del formulario
@@ -166,7 +195,7 @@ def anular(id):
         
         # RN-08: Cambiar estado y registrar información de anulación
         venta.estado = 'anulada'
-        venta.fecha_anulacion = datetime.utcnow()
+        venta.fecha_anulacion = datetime.now()
         venta.anulada_por = current_user.id
         venta.motivo_anulacion = motivo
         
