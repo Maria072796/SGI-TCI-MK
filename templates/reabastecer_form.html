@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Reabastecer Stock - SGI-TCI MK{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('auth.dashboard') }}">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('inventario.listar') }}">Inventario</a></li>
+            <li class="breadcrumb-item active">Reabastecer Stock</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Reabastecer Stock: {{ producto.nombre }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <p><strong>Stock actual:</strong> {{ producto.stock_actual }}</p>
+                        <p><strong>Stock mínimo:</strong> {{ producto.stock_minimo }}</p>
+                        <p><strong>Precio venta:</strong> {{ producto.precio_venta|moneda }}</p>
+                    </div>
+
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="cantidad_agregar" class="form-label">Cantidad a agregar</label>
+                            <input type="number" class="form-control" id="cantidad_agregar" name="cantidad_agregar" 
+                                   min="1" required autofocus>
+                            <div class="form-text">Ingresa la cantidad de unidades que deseas agregar al stock actual.</div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-2"></i>
+                                Agregar al stock
+                            </button>
+                            <a href="{{ url_for('inventario.listar') }}" class="btn btn-secondary">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

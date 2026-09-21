@@ -30,41 +30,63 @@
 </div>
 
 <div class="row">
-    <div class="col-md-3 mb-4">
-        <div class="card text-white bg-success">
+    {% if current_user.rol == 'vendedor' %}
+    <!-- Vista del vendedor: solo muestra ventas y total recogido -->
+    <div class="col-md-6 mb-4">
+        <div class="card" style="background-color: #B8D4E3;">
             <div class="card-body">
-                <h5 class="card-title">Total Ventas</h5>
-                <p class="card-text display-6">${{ "%.2f"|format(total_ventas) }}</p>
+                <h5 class="card-title" style="color: #1A3A4A;">Total ventas</h5>
+                <p class="card-text display-6" style="color: #1A3A4A;">{{ cantidad_ventas }} venta{{ 's' if cantidad_ventas != 1 else '' }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card" style="background-color: #6A9EC4;">
+            <div class="card-body">
+                <h5 class="card-title" style="color: #0A2A3A;">Total recogido</h5>
+                <p class="card-text display-6" style="color: #0A2A3A;">{{ total_ventas|moneda }}</p>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Vista del administrador: muestra información financiera completa -->
+    <div class="col-md-3 mb-4">
+        <div class="card" style="background-color: #B8D4E3;">
+            <div class="card-body">
+                <h5 class="card-title" style="color: #1A3A4A;">Total Ingresos</h5>
+                <p class="card-text display-6" style="color: #1A3A4A;">{{ total_ventas|moneda }}</p>
             </div>
         </div>
     </div>
     
     <div class="col-md-3 mb-4">
-        <div class="card text-white bg-danger">
+        <div class="card" style="background-color: #E8A0A0;">
             <div class="card-body">
-                <h5 class="card-title">Total Costos</h5>
-                <p class="card-text display-6">${{ "%.2f"|format(total_costos) }}</p>
+                <h5 class="card-title" style="color: #5C1F1F;">Total Costos</h5>
+                <p class="card-text display-6" style="color: #5C1F1F;">{{ total_costos|moneda }}</p>
             </div>
         </div>
     </div>
     
     <div class="col-md-3 mb-4">
-        <div class="card text-white bg-warning">
+        <div class="card" style="background-color: #C4B0D9;">
             <div class="card-body">
-                <h5 class="card-title">Total Egresos</h5>
-                <p class="card-text display-6">${{ "%.2f"|format(total_egresos) }}</p>
+                <h5 class="card-title" style="color: #3D2B52;">Total Egresos</h5>
+                <p class="card-text display-6" style="color: #3D2B52;">{{ total_egresos|moneda }}</p>
             </div>
         </div>
     </div>
     
     <div class="col-md-3 mb-4">
-        <div class="card text-white {% if utilidad_real >= 0 %}bg-primary{% else %}bg-secondary{% endif %}">
+        <div class="card" style="background-color: #6A9EC4;">
             <div class="card-body">
-                <h5 class="card-title">Utilidad Real</h5>
-                <p class="card-text display-6">${{ "%.2f"|format(utilidad_real) }}</p>
+                <h5 class="card-title" style="color: #0A2A3A;">Utilidad</h5>
+                <p class="card-text display-6" style="color: #0A2A3A;">{{ utilidad_real|moneda }}</p>
             </div>
         </div>
     </div>
+    {% endif %}
 </div>
 
 <div class="row">
@@ -75,26 +97,43 @@
             </div>
             <div class="card-body">
                 <div class="row">
+                    {% if current_user.rol == 'vendedor' %}
+                    <!-- Vista del vendedor: solo muestra ventas y total -->
                     <div class="col-md-6">
                         <table class="table table-bordered">
                             <tr>
-                                <td><strong>Total Ventas:</strong></td>
-                                <td class="text-end">${{ "%.2f"|format(total_ventas) }}</td>
+                                <td><strong>Total ventas:</strong></td>
+                                <td class="text-end">{{ cantidad_ventas }} venta{{ 's' if cantidad_ventas != 1 else '' }}</td>
                             </tr>
                             <tr>
-                                <td><strong>Total Costos de Productos:</strong></td>
-                                <td class="text-end">${{ "%.2f"|format(total_costos) }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Total Egresos:</strong></td>
-                                <td class="text-end">${{ "%.2f"|format(total_egresos) }}</td>
-                            </tr>
-                            <tr class="table-primary">
-                                <td><strong>Utilidad Real:</strong></td>
-                                <td class="text-end fw-bold">${{ "%.2f"|format(utilidad_real) }}</td>
+                                <td><strong>Total recogido:</strong></td>
+                                <td class="text-end">{{ total_ventas|moneda }}</td>
                             </tr>
                         </table>
                     </div>
+                    {% else %}
+                    <!-- Vista del administrador: muestra información financiera completa -->
+                    <div class="col-md-6">
+                        <table class="table table-bordered">
+                            <tr>
+                                <td><strong>Total Ingresos:</strong></td>
+                                <td class="text-end">{{ total_ventas|moneda }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Costos de Productos:</strong></td>
+                                <td class="text-end">{{ total_costos|moneda }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Egresos:</strong></td>
+                                <td class="text-end">{{ total_egresos|moneda }}</td>
+                            </tr>
+                            <tr class="table-primary">
+                                <td><strong>Utilidad:</strong></td>
+                                <td class="text-end fw-bold">{{ utilidad_real|moneda }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    {% endif %}
                     <div class="col-md-6">
                         <div class="alert alert-info">
                             <h5 class="alert-heading">Información</h5>
@@ -103,9 +142,11 @@
                                 Una vez realizado, no se podrán modificar las ventas y egresos de esta fecha en el cierre.
                             </p>
                         </div>
+                        {% if current_user.rol == 'administrador' %}
                         <a href="{{ url_for('reportes.utilidad_diaria', fecha=fecha.strftime('%Y-%m-%d')) }}" class="btn btn-outline-info">
                             Ver Detalle Utilidad Diaria
                         </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>

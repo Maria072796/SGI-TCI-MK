@@ -1,10 +1,13 @@
 from flask import Blueprint
 
 def formatear_moneda(valor):
-    """Formatea un valor numérico como moneda colombiana."""
+    """Formatea un valor numérico como moneda colombiana sin decimales."""
     try:
         valor_float = float(valor)
-        return f"${valor_float:,.2f}"
+        # Redondear al entero más cercano
+        valor_redondeado = round(valor_float)
+        # Formatear con punto como separador de miles
+        return f"${valor_redondeado:,.0f}".replace(",", ".")
     except (ValueError, TypeError):
         return valor
 

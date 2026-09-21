@@ -20,37 +20,37 @@
 
 <div class="row">
     <div class="col-md-3 mb-4">
-        <div class="card text-white bg-success">
+        <div class="card" style="background-color: #B8D4E3;">
             <div class="card-body">
-                <h5 class="card-title">Total Ventas</h5>
-                <p class="card-text display-6">${{ "%.2f"|format(total_ventas) }}</p>
+                <h5 class="card-title" style="color: #1A3A4A;">Total Ingresos</h5>
+                <p class="card-text display-6" style="color: #1A3A4A;">{{ total_ventas|moneda }}</p>
             </div>
         </div>
     </div>
     
     <div class="col-md-3 mb-4">
-        <div class="card text-white bg-danger">
+        <div class="card" style="background-color: #E8A0A0;">
             <div class="card-body">
-                <h5 class="card-title">Total Costos</h5>
-                <p class="card-text display-6">${{ "%.2f"|format(total_costos) }}</p>
+                <h5 class="card-title" style="color: #5C1F1F;">Total Costos</h5>
+                <p class="card-text display-6" style="color: #5C1F1F;">{{ total_costos|moneda }}</p>
             </div>
         </div>
     </div>
     
     <div class="col-md-3 mb-4">
-        <div class="card text-white bg-warning">
+        <div class="card" style="background-color: #C4B0D9;">
             <div class="card-body">
-                <h5 class="card-title">Total Egresos</h5>
-                <p class="card-text display-6">${{ "%.2f"|format(total_egresos) }}</p>
+                <h5 class="card-title" style="color: #3D2B52;">Total Egresos</h5>
+                <p class="card-text display-6" style="color: #3D2B52;">{{ total_egresos|moneda }}</p>
             </div>
         </div>
     </div>
     
     <div class="col-md-3 mb-4">
-        <div class="card text-white {% if utilidad_real >= 0 %}bg-primary{% else %}bg-secondary{% endif %}">
+        <div class="card" style="background-color: #6A9EC4;">
             <div class="card-body">
-                <h5 class="card-title">Utilidad Real</h5>
-                <p class="card-text display-6">${{ "%.2f"|format(utilidad_real) }}</p>
+                <h5 class="card-title" style="color: #0A2A3A;">Utilidad</h5>
+                <p class="card-text display-6" style="color: #0A2A3A;">{{ utilidad_real|moneda }}</p>
             </div>
         </div>
     </div>
@@ -80,7 +80,7 @@
                                         <td>{{ venta.id }}</td>
                                         <td>{{ venta.fecha_hora.strftime('%H:%M') }}</td>
                                         <td>{{ venta.usuario.nombre_completo or venta.usuario.username }}</td>
-                                        <td>${{ "%.2f"|format(venta.total) }}</td>
+                                        <td>{{ venta.total|moneda }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -116,7 +116,7 @@
                                         <td>{{ egreso.id }}</td>
                                         <td>{{ egreso.fecha_hora.strftime('%H:%M') }}</td>
                                         <td>{{ egreso.descripcion }}</td>
-                                        <td>${{ "%.2f"|format(egreso.monto) }}</td>
+                                        <td>{{ egreso.monto|moneda }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>

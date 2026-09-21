@@ -107,6 +107,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     const precioCosto = document.getElementById('precio_costo');
     const precioVenta = document.getElementById('precio_venta');
+    const stockActual = document.getElementById('stock_actual');
+    const stockMinimo = document.getElementById('stock_minimo');
     
     // Validar que precio de venta sea mayor al costo
     function validarPrecios() {
@@ -116,14 +118,132 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (venta <= costo) {
                 precioVenta.setCustomValidity('El precio de venta debe ser mayor al precio de costo');
+                mostrarMensajeValidacion('¡ERROR! El precio de venta debe ser mayor al precio de costo para generar utilidad. Valor de venta no válido.');
+                // Resaltar el campo de venta
+                precioVenta.style.borderColor = 'red';
+                precioVenta.style.backgroundColor = '#ffe6e6';
             } else {
                 precioVenta.setCustomValidity('');
+                // Limpiar mensaje de validación si existe
+                limpiarMensajeValidacion();
+                // Restaurar estilos normales
+                precioVenta.style.borderColor = '';
+                precioVenta.style.backgroundColor = '';
             }
         }
     }
     
-    precioCosto.addEventListener('input', validarPrecios);
-    precioVenta.addEventListener('input', validarPrecios);
+    // Validar que no se ingresen valores negativos
+    function validarNoNegativos(input) {
+        if (input.value && parseFloat(input.value) < 0) {
+            input.setCustomValidity('No se permiten valores negativos. Valor debe ser 0 o positivo.');
+            input.value = 0; // Resetear a 0
+            // Mostrar mensaje de alerta visible
+            mostrarMensajeValidacion('No se permiten valores negativos. Valor debe ser 0 o positivo.');
+        } else {
+            input.setCustomValidity('');
+        }
+    }
+    
+    // Validar caracteres no válidos
+    function validarCaracteresValidos(input) {
+        const valor = input.value;
+        // Solo permitir números, punto decimal y signo negativo al inicio
+        if (valor && !/^-?\d*\.?\d*$/.test(valor)) {
+            input.setCustomValidity('Carácter no válido. Solo se permiten números y punto decimal.');
+            mostrarMensajeValidacion('Carácter no válido. Solo se permiten números y punto decimal.');
+        } else {
+            input.setCustomValidity('');
+        }
+    }
+    
+    // Función para mostrar mensaje de validación visible
+    function mostrarMensajeValidacion(mensaje) {
+        // Eliminar mensajes anteriores
+        const mensajeAnterior = document.querySelector('.mensaje-validacion');
+        if (mensajeAnterior) {
+            mensajeAnterior.remove();
+        }
+        
+        // Crear nuevo mensaje más destacado
+        const mensajeDiv = document.createElement('div');
+        mensajeDiv.className = 'alert alert-danger mensaje-validacion mt-2';
+        mensajeDiv.style.fontSize = '16px';
+        mensajeDiv.style.fontWeight = 'bold';
+        mensajeDiv.style.padding = '15px';
+        mensajeDiv.style.border = '2px solid #dc3545';
+        mensajeDiv.textContent = mensaje;
+        
+        // Insertar después del input correspondiente
+        if (document.activeElement === precioVenta) {
+            const formGroup = precioVenta.closest('.mb-3') || precioVenta.closest('.col-md-6');
+            if (formGroup) {
+                formGroup.appendChild(mensajeDiv);
+            }
+        } else if (document.activeElement === precioCosto) {
+            const formGroup = precioCosto.closest('.mb-3') || precioCosto.closest('.col-md-6');
+            if (formGroup) {
+                formGroup.appendChild(mensajeDiv);
+            }
+        } else {
+            // Si no hay campo activo, insertar después del precio de venta
+            const formGroup = precioVenta.closest('.mb-3') || precioVenta.closest('.col-md-6');
+            if (formGroup) {
+                formGroup.appendChild(mensajeDiv);
+            }
+        }
+        
+        // No eliminar automáticamente, solo al corregir el error
+    }
+    
+    // Función para limpiar mensajes de validación
+    function limpiarMensajeValidacion() {
+        const mensajeAnterior = document.querySelector('.mensaje-validacion');
+        if (mensajeAnterior) {
+            mensajeAnterior.remove();
+        }
+    }
+    
+    precioCosto.addEventListener('input', function() {
+        validarNoNegativos(this);
+        validarCaracteresValidos(this);
+        validarPrecios();
+    });
+    
+    precioVenta.addEventListener('input', function() {
+        validarNoNegativos(this);
+        validarCaracteresValidos(this);
+        validarPrecios();
+    });
+    
+    // Validar también cuando el campo pierde el foco
+    precioCosto.addEventListener('blur', function() {
+        validarPrecios();
+    });
+    
+    precioVenta.addEventListener('blur', function() {
+        validarPrecios();
+    });
+    
+    stockActual.addEventListener('input', function() {
+        validarNoNegativos(this);
+        validarCaracteresValidos(this);
+    });
+    
+    stockMinimo.addEventListener('input', function() {
+        validarNoNegativos(this);
+        validarCaracteresValidos(this);
+    });
+    
+    precioCosto.addEventListener('input', function() {
+        validarNoNegativos(this);
+        validarCaracteresValidos(this);
+    });
+    
+    precioVenta.addEventListener('input', function() {
+        validarNoNegativos(this);
+        validarCaracteresValidos(this);
+    });
 });
 </script>
 {% endblock %}

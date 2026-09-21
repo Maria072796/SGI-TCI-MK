@@ -1,4 +1,4 @@
-from models import Venta, DetalleVenta, Egreso, Producto, CierreCaja
+from models import db, Venta, DetalleVenta, Egreso, Producto, CierreCaja
 from datetime import datetime, date
 from decimal import Decimal
 from sqlalchemy import func
@@ -106,3 +106,19 @@ def productos_bajo_stock():
         Producto.activo == True,
         Producto.stock_actual <= Producto.stock_minimo
     ).all()
+
+def usuario_cerro_caja_hoy(usuario_id, fecha=None):
+    """
+    Verifica si un usuario ya cerró caja hoy.
+    Si fecha no se proporciona, usa la fecha actual.
+    Retorna True si ya cerró caja, False en caso contrario.
+    """
+    if fecha is None:
+        fecha = date.today()
+    
+    cierre = CierreCaja.query.filter_by(
+        fecha=fecha,
+        usuario_id=usuario_id
+    ).first()
+    
+    return cierre is not None

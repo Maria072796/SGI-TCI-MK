@@ -42,18 +42,16 @@
                             <td>{{ egreso.fecha_hora|fecha_hora }}</td>
                             <td>{{ egreso.descripcion }}</td>
                             <td>{{ egreso.categoria|default('Sin categoría') }}</td>
-                            <td class="text-right text-danger fw-bold">${{ egreso.monto|moneda }}</td>
+                            <td class="text-right text-danger fw-bold">{{ egreso.monto|moneda }}</td>
                             <td>{{ egreso.usuario.nombre_completo if egreso.usuario else 'N/A' }}</td>
                             <td>
                                 <div class="btn-group btn-group-sm">
                                     <a href="{{ url_for('egresos.editar_egreso', id=egreso.id) }}" class="btn btn-outline-primary">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <form action="{{ url_for('egresos.eliminar_egreso', id=egreso.id) }}" method="POST" class="d-inline">
-                                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('¿Está seguro de desactivar este gasto?')">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalEliminarEgreso{{ egreso.id }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -79,4 +77,28 @@
     </div>
     {% endif %}
 </div>
+
+<!-- Modales de confirmación para eliminar egresos -->
+{% for egreso in egresos %}
+<div class="modal fade" id="modalEliminarEgreso{{ egreso.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Eliminar Gasto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Eliminar el gasto <strong>{{ egreso.descripcion }}</strong>?</p>
+                <p class="text-muted">El gasto ya no aparecerá en el listado pero se mantendrá en el historial financiero.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form action="{{ url_for('egresos.eliminar_egreso', id=egreso.id) }}" method="POST">
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}

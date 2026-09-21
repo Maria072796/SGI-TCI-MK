@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Stock - SGI-TCI MK{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('auth.dashboard') }}">Inicio</a></li>
+            <li class="breadcrumb-item active">Stock</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Stock</h2>
+        <div class="d-flex gap-2">
+            <select class="form-select form-select-sm" style="width: auto;" onchange="ordenarStock(this.value)">
+                <option value="nombre" {% if orden == 'nombre' %}selected{% endif %}>Ordenar por nombre</option>
+                <option value="stock_asc" {% if orden == 'stock_asc' %}selected{% endif %}>Menor stock primero</option>
+                <option value="stock_desc" {% if orden == 'stock_desc' %}selected{% endif %}>Mayor stock primero</option>
+            </select>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="soloBajo" {% if solo_bajo %}checked{% endif %} onchange="toggleStockBajo()">
+                <label class="form-check-label" for="soloBajo">Solo stock bajo</label>
+            </div>
+        </div>
+    </div>
+
+    {% if productos %}
+    <div class="panel">
+        <div class="panel-body p-0">
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            {% if current_user.rol == 'administrador' %}
+                            <th>Precio Costo</th>
+                            {% endif %}
+                            <th>Precio Venta</th>
+                            <th>Stock Actual</th>
+                            {% if current_user.rol == 'administrador' %}
+                            <th>Stock Mínimo</th>
+                            <th>Valor Total</th>
+                            {% endif %}
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for producto in productos %}
+                        <tr class="{% if producto.stock_actual <= producto.stock_minimo %}stock-bajo{% endif %}">
+                            <td>{{ producto.id }}</td>
+                            <td>{{ producto.nombre }}</td>
+                            <td>{{ producto.descripcion|truncate(50) if producto.descripcion else '-' }}</td>
+                            {% if current_user.rol == 'administrador' %}
+                            <td class="text-right">{{ producto.precio_costo|moneda }}</td>
+                            {% endif %}
+                            <td class="text-right">{{ producto.precio_venta|moneda }}</td>
+                            <td class="text-right">
+                                <span class="{% if producto.stock_actual <= producto.stock_minimo %}text-danger{% endif %}">
+                                    {{ producto.stock_actual }}
+                                </span>
+                            </td>
+                            {% if current_user.rol == 'administrador' %}
+                            <td class="text-right">{{ producto.stock_minimo }}</td>
+                            <td class="text-right">{{ (producto.stock_actual * producto.precio_costo)|moneda }}</td>
+                            {% endif %}
+                            <td>
+                                {% if producto.activo %}
+                                    <span class="badge bg-success">Activo</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inactivo</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="panel">
+        <div class="panel-body text-center py-5">
+            <div class="mb-3">
+                <i class="bi bi-box-seam" style="font-size: 3rem; color: var(--mk-pizarra);"></i>
+            </div>
+            <h4 class="mb-3">No hay productos en el inventario</h4>
+            <p class="text-muted">No hay productos disponibles para consultar</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function ordenarStock(orden) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('orden', orden);
+    window.location.href = url.toString();
+}
+
+function toggleStockBajo() {
+    const checkbox = document.getElementById('soloBajo');
+    const url = new URL(window.location.href);
+    url.searchParams.set('solo_bajo', checkbox.checked);
+    window.location.href = url.toString();
+}
+</script>
+{% endblock %}
