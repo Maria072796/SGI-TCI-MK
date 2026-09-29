@@ -39,8 +39,8 @@ def create_app():
     login_manager.login_view = 'auth.login'
     login_manager.login_message = 'Por favor inicia sesión para acceder a esta página.'
     
-    # Configurar tiempo de sesión a 1.5 minutos (90 segundos)
-    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(seconds=90)
+    # Configurar tiempo de sesión a 3 horas (10800 segundos)
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=3)
     app.config['SESSION_REFRESH_EACH_REQUEST'] = True
     
     @login_manager.user_loader

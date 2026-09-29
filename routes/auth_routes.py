@@ -33,7 +33,9 @@ def login():
                 flash('Su cuenta está desactivada. Contacte al administrador.', 'danger')
                 return render_template('login.html')
             
+            from flask import session
             login_user(user)
+            session.permanent = True
             flash(f'Bienvenido, {user.nombre_completo or user.username}!', 'success')
             return redirect(url_for('auth.dashboard'))
         else:
