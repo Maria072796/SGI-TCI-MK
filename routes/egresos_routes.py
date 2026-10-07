@@ -29,16 +29,10 @@ def crear_egreso():
     
     if request.method == 'POST':
         try:
-            print("DEBUG: Recibiendo POST para crear egreso")
-            print("DEBUG: Form data:", dict(request.form))
-            
             tipo_gasto = request.form.get('tipo_gasto')
             descripcion = request.form.get('descripcion')
             observaciones = request.form.get('observaciones')
             otro_detalle = request.form.get('otro_detalle')
-            
-            print(f"DEBUG: Tipo de gasto: {tipo_gasto}")
-            print(f"DEBUG: Descripción: {descripcion}")
             
             # Determinar categoría basada en el tipo de gasto
             categoria_map = {
@@ -51,17 +45,14 @@ def crear_egreso():
             categoria = categoria_map.get(tipo_gasto, 'Otro')
             
             if tipo_gasto == 'compra_insumos':
-                print("DEBUG: Procesando compra de insumos")
                 # Procesar compra de insumos
                 productos_json = request.form.get('productos_json')
-                print(f"DEBUG: Productos JSON recibido: {productos_json}")
                 
                 if not productos_json:
                     flash('No hay productos en la compra de insumos.', 'warning')
                     return render_template('egreso_form.html', action='crear')
                 
                 productos = json.loads(productos_json)
-                print(f"DEBUG: Productos parseados: {productos}")
                 monto_total = Decimal('0')
                 
                 for prod in productos:
@@ -72,7 +63,6 @@ def crear_egreso():
                     es_nuevo = prod.get('es_nuevo_producto', False)
                     
                     if es_nuevo:
-                        print(f"DEBUG: Creando nuevo producto: {prod['nombre']}")
                         # Crear el producto nuevo en la base de datos
                         nuevo_producto = Producto(
                             nombre=prod['nombre'],
@@ -91,7 +81,6 @@ def crear_egreso():
                     else:
                         # Producto existente
                         producto_id = prod['producto_id']
-                        print(f"DEBUG: Procesando producto existente ID {producto_id}, cantidad {cantidad}, costo {costo_unitario}")
                         
                         # Buscar el producto
                         producto = Producto.query.get(producto_id)
@@ -114,9 +103,6 @@ def crear_egreso():
                     productos_texto = ', '.join([f"{p['cantidad']} {p['nombre']}" for p in productos])
                     descripcion = f"Compra de insumos: {productos_texto}"
                 
-                print(f"DEBUG: Monto total: {monto_total}")
-                print(f"DEBUG: Descripción final: {descripcion}")
-                
                 egreso = Egreso(
                     descripcion=descripcion,
                     monto=monto_total,
@@ -130,12 +116,10 @@ def crear_egreso():
                 db.session.add(egreso)
                 db.session.commit()
                 
-                print("DEBUG: Egreso creado exitosamente")
                 flash('Compra de insumos registrada exitosamente. Stock actualizado.', 'success')
                 return redirect(url_for('egresos.listar'))
                 
             else:
-                print("DEBUG: Procesando gasto normal")
                 # Gasto normal (servicios, arriendo, nómina, otro)
                 monto = Decimal(request.form.get('monto'))
                 
@@ -163,9 +147,6 @@ def crear_egreso():
                 return redirect(url_for('egresos.listar'))
             
         except Exception as e:
-            print(f"DEBUG: Error al registrar gasto: {str(e)}")
-            import traceback
-            traceback.print_exc()
             db.session.rollback()
             flash(f'Error al registrar el gasto: {str(e)}', 'danger')
             return render_template('egreso_form.html', action='crear')

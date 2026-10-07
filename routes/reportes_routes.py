@@ -5,7 +5,7 @@ from datetime import datetime, date
 from decimal import Decimal
 from sqlalchemy import func
 from utils.seguridad import rol_requerido
-from utils.finanzas import valor_inventario_total, productos_bajo_stock
+from utils.finanzas import valor_inventario_total, productos_bajo_stock, egresos_del_periodo
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
@@ -46,11 +46,8 @@ def utilidad_diaria():
         for detalle in venta.detalles:
             total_costos += detalle.costo_unitario * detalle.cantidad
     
-    # Calcular egresos del día
-    egresos_dia = Egreso.query.filter(
-        func.date(Egreso.fecha_hora) == fecha
-    ).all()
-    
+    # Calcular egresos del día (usando función centralizada)
+    egresos_dia = egresos_del_periodo(fecha, fecha)
     total_egresos = sum(e.monto for e in egresos_dia)
     
     # Calcular utilidad real
@@ -138,11 +135,8 @@ def cierre_caja():
                 for detalle in venta.detalles:
                     total_costos += detalle.costo_unitario * detalle.cantidad
             
-            # Calcular egresos del día
-            egresos_dia = Egreso.query.filter(
-                func.date(Egreso.fecha_hora) == fecha
-            ).all()
-            
+            # Calcular egresos del día (usando función centralizada)
+            egresos_dia = egresos_del_periodo(fecha, fecha)
             total_egresos = sum(e.monto for e in egresos_dia)
             
             # Calcular utilidad real
@@ -192,9 +186,7 @@ def cierre_caja():
         total_costos = Decimal('0')
         for venta in ventas_dia:
             for detalle in venta.detalles:
-                producto = Producto.query.get(detalle.producto_id)
-                if producto:
-                    total_costos += producto.precio_costo * detalle.cantidad
+                total_costos += detalle.costo_unitario * detalle.cantidad
         
         # Para el vendedor no se muestran egresos ni utilidad
         total_egresos = Decimal('0')
@@ -213,14 +205,9 @@ def cierre_caja():
         total_costos = Decimal('0')
         for venta in ventas_dia:
             for detalle in venta.detalles:
-                producto = Producto.query.get(detalle.producto_id)
-                if producto:
-                    total_costos += producto.precio_costo * detalle.cantidad
+                total_costos += detalle.costo_unitario * detalle.cantidad
         
-        egresos_dia = Egreso.query.filter(
-            func.date(Egreso.fecha_hora) == fecha
-        ).all()
-        
+        egresos_dia = egresos_del_periodo(fecha, fecha)
         total_egresos = sum(e.monto for e in egresos_dia)
         utilidad_real = total_ventas - total_costos - total_egresos
         mostrar_egresos = True
@@ -284,20 +271,14 @@ def reporte_financiero():
     
     total_ventas = sum(v.total for v in ventas_periodo)
     
-    # Calcular costos
+    # Calcular costos (usando costo_unitario guardado al momento de venta)
     total_costos = Decimal('0')
     for venta in ventas_periodo:
         for detalle in venta.detalles:
-            producto = Producto.query.get(detalle.producto_id)
-            if producto:
-                total_costos += producto.precio_costo * detalle.cantidad
-    
-    # Calcular egresos
-    egresos_periodo = Egreso.query.filter(
-        func.date(Egreso.fecha_hora) >= fecha_inicio,
-        func.date(Egreso.fecha_hora) <= fecha_fin
-    ).all()
-    
+            total_costos += detalle.costo_unitario * detalle.cantidad
+
+    # Calcular egresos (usando función centralizada)
+    egresos_periodo = egresos_del_periodo(fecha_inicio, fecha_fin)
     total_egresos = sum(e.monto for e in egresos_periodo)
     
     utilidad_real = total_ventas - total_costos - total_egresos
@@ -335,20 +316,14 @@ def reporte_financiero_pdf():
     
     total_ventas = sum(v.total for v in ventas_periodo)
     
-    # Calcular costos
+    # Calcular costos (usando costo_unitario guardado al momento de venta)
     total_costos = Decimal('0')
     for venta in ventas_periodo:
         for detalle in venta.detalles:
-            producto = Producto.query.get(detalle.producto_id)
-            if producto:
-                total_costos += producto.precio_costo * detalle.cantidad
-    
-    # Calcular egresos
-    egresos_periodo = Egreso.query.filter(
-        func.date(Egreso.fecha_hora) >= fecha_inicio,
-        func.date(Egreso.fecha_hora) <= fecha_fin
-    ).all()
-    
+            total_costos += detalle.costo_unitario * detalle.cantidad
+
+    # Calcular egresos (usando función centralizada)
+    egresos_periodo = egresos_del_periodo(fecha_inicio, fecha_fin)
     total_egresos = sum(e.monto for e in egresos_periodo)
     
     utilidad_real = total_ventas - total_costos - total_egresos
@@ -386,7 +361,7 @@ def reporte_financiero_pdf():
     resumen_data = [
         ['Métrica', 'Monto'],
         ['Total Ingresos', f'${total_ventas:,.2f}'],
-        ['Total Costos', f'${total_costos:,.2f}'],
+        ['Capital de reinversión', f'${total_costos:,.2f}'],
         ['Total Egresos', f'${total_egresos:,.2f}'],
         ['Utilidad', f'${utilidad_real:,.2f}']
     ]
@@ -489,7 +464,7 @@ def reporte_financiero_pdf():
         ['Concepto', 'Monto'],
         ['Período', f'{fecha_inicio.strftime("%d/%m/%Y")} - {fecha_fin.strftime("%d/%m/%Y")}'],
         ['Total Ingresos', f'${total_ventas:,.2f}'],
-        ['Total Costos de Productos', f'${total_costos:,.2f}'],
+        ['Capital de reinversión', f'${total_costos:,.2f}'],
         ['Total Egresos', f'${total_egresos:,.2f}'],
         ['Utilidad', f'${utilidad_real:,.2f}']
     ]

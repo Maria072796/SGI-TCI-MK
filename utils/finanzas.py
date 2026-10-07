@@ -122,3 +122,17 @@ def usuario_cerro_caja_hoy(usuario_id, fecha=None):
     ).first()
     
     return cierre is not None
+
+def egresos_del_periodo(fecha_inicio, fecha_fin):
+    """
+    Retorna los egresos activos del período especificado.
+    Excluye egresos de categoría "Compra de insumos" (ya se reflejan como costo en ventas).
+    """
+    egresos = Egreso.query.filter(
+        Egreso.activo == True,
+        Egreso.categoria != 'Compra de insumos',
+        func.date(Egreso.fecha_hora) >= fecha_inicio,
+        func.date(Egreso.fecha_hora) <= fecha_fin
+    ).all()
+    
+    return egresos
