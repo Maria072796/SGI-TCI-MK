@@ -36,6 +36,12 @@ def login():
             from flask import session
             login_user(user)
             session.permanent = True
+
+            # Verificar si debe cambiar contraseña obligatoriamente
+            if user.debe_cambiar_password:
+                flash('Por seguridad, debes cambiar tu contraseña antes de continuar.', 'warning')
+                return redirect(url_for('auth.cambiar_password'))
+
             flash(f'Bienvenido, {user.nombre_completo or user.username}!', 'success')
             return redirect(url_for('auth.dashboard'))
         else:
@@ -182,7 +188,8 @@ def crear_usuario():
                 activo=True
             )
             usuario.set_password(password)
-            
+            usuario.debe_cambiar_password = True  # Obligar cambio de contraseña en primer ingreso
+
             db.session.add(usuario)
             db.session.commit()
             
@@ -293,7 +300,12 @@ def cambiar_password():
                 for error in errores:
                     flash(error, 'danger')
                 return render_template('cambiar_password.html')
-            
+
+            # Verificar que la nueva contraseña no contenga el username
+            if current_user.username.lower() in nueva_password.lower():
+                flash('La contraseña no puede contener tu nombre de usuario.', 'danger')
+                return render_template('cambiar_password.html')
+
             # Actualizar contraseña
             current_user.set_password(nueva_password)
             current_user.debe_cambiar_password = False

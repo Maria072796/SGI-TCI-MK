@@ -58,11 +58,28 @@ def rol_requerido(rol_requerido):
         def decorated_function(*args, **kwargs):
             if not current_user.is_authenticated:
                 return redirect(url_for('auth.login'))
-            
+
             if current_user.rol != rol_requerido:
                 flash('No tienes permiso para acceder a esta página.', 'danger')
                 return redirect(url_for('auth.dashboard'))
-            
+
             return f(*args, **kwargs)
         return decorated_function
     return decorator
+
+def requiere_cambio_password(f):
+    """
+    Decorador para verificar si el usuario debe cambiar contraseña obligatoriamente.
+    Si debe cambiarla, redirige a la pantalla de cambio de contraseña.
+    Excluye la ruta de cambio de contraseña y logout para evitar bucles infinitos.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if current_user.is_authenticated and current_user.debe_cambiar_password:
+            # Si no está en la ruta de cambio de contraseña, redirigir
+            from flask import request
+            if request.endpoint != 'auth.cambiar_password' and request.endpoint != 'auth.logout':
+                flash('Por seguridad, debes cambiar tu contraseña antes de continuar.', 'warning')
+                return redirect(url_for('auth.cambiar_password'))
+        return f(*args, **kwargs)
+    return decorated_function
