@@ -368,5 +368,5 @@ function crearProductoNuevo() {
     modal.hide();
     
     actualizarCarritoGasto();
-    showNotification('Producto agregado al carrito (se creará al confirmar el gasto)', 'success');
+    showNotification('Producto agregado al carrito (se creará al confirmar el egreso)', 'success');
 }

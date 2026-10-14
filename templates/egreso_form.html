@@ -4,7 +4,7 @@
 <div class="row">
     <div class="col-12">
         <h2 class="mb-4">
-            {% if action == 'crear' %}Registrar Nuevo Gasto{% else %}Editar Gasto{% endif %}
+            {% if action == 'crear' %}Registrar Nuevo Egreso{% else %}Editar Egreso{% endif %}
         </h2>
     </div>
 </div>
@@ -15,9 +15,9 @@
             <div class="card-body">
                 <form method="POST" id="gastoForm">
                     <div class="mb-3">
-                        <label for="tipo_gasto" class="form-label">Tipo de gasto *</label>
+                        <label for="tipo_gasto" class="form-label">Tipo de egreso *</label>
                         <select class="form-select" id="tipo_gasto" name="tipo_gasto" onchange="cambiarTipoGasto()" required>
-                            <option value="">Seleccione tipo de gasto...</option>
+                            <option value="">Seleccione tipo de egreso...</option>
                             <option value="servicios_publicos">Servicios públicos</option>
                             <option value="arriendo">Arriendo</option>
                             <option value="nomina">Nómina</option>
@@ -33,7 +33,7 @@
                                value="{{ egreso.descripcion if egreso else '' }}" required>
                     </div>
                     
-                    <!-- Formulario simple para gastos normales -->
+                    <!-- Formulario simple para egresos normales -->
                     <div id="formularioSimple">
                         <div class="mb-3">
                             <label for="monto" class="form-label">Monto *</label>
@@ -78,13 +78,13 @@
                         </div>
 
                         <div class="alert alert-info mt-3">
-                            <strong>Total del gasto:</strong> <span id="totalGasto">$0.00</span>
+                            <strong>Total del egreso:</strong> <span id="totalGasto">$0.00</span>
                         </div>
                     </div>
                     
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-danger">
-                            {% if action == 'crear' %}Registrar Gasto{% else %}Actualizar Gasto{% endif %}
+                            {% if action == 'crear' %}Registrar Egreso{% else %}Actualizar Egreso{% endif %}
                         </button>
                         <a href="{{ url_for('egresos.listar') }}" class="btn btn-secondary">Cancelar</a>
                     </div>
@@ -144,13 +144,13 @@
             <div class="card-body">
                 <ul class="list-unstyled">
                     <li class="mb-2">
-                        <strong>Tipo de gasto:</strong> Selecciona la categoría del gasto.
+                        <strong>Tipo de egreso:</strong> Selecciona la categoría del egreso.
                     </li>
                     <li class="mb-2">
                         <strong>Compra de insumos:</strong> Permite agregar múltiples productos y actualiza el inventario automáticamente.
                     </li>
                     <li class="mb-2">
-                        <strong>Otros gastos:</strong> Solo registran el monto sin afectar el inventario.
+                        <strong>Otros egresos:</strong> Solo registran el monto sin afectar el inventario.
                     </li>
                 </ul>
             </div>

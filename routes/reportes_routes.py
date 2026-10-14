@@ -364,7 +364,7 @@ def reporte_financiero_pdf():
     resumen_data = [
         ['Métrica', 'Monto'],
         ['Total Ingresos', f'${total_ventas:,.2f}'],
-        ['Capital de reinversión', f'${total_costos:,.2f}'],
+        ['Total Costos', f'${total_costos:,.2f}'],
         ['Total Egresos', f'${total_egresos:,.2f}'],
         ['Utilidad', f'${utilidad_real:,.2f}']
     ]
@@ -467,7 +467,7 @@ def reporte_financiero_pdf():
         ['Concepto', 'Monto'],
         ['Período', f'{fecha_inicio.strftime("%d/%m/%Y")} - {fecha_fin.strftime("%d/%m/%Y")}'],
         ['Total Ingresos', f'${total_ventas:,.2f}'],
-        ['Capital de reinversión', f'${total_costos:,.2f}'],
+        ['Total Costos', f'${total_costos:,.2f}'],
         ['Total Egresos', f'${total_egresos:,.2f}'],
         ['Utilidad', f'${utilidad_real:,.2f}']
     ]

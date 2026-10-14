@@ -143,12 +143,12 @@ def crear_egreso():
                 db.session.add(egreso)
                 db.session.commit()
                 
-                flash('Gasto registrado exitosamente.', 'success')
+                flash('Egreso registrado exitosamente.', 'success')
                 return redirect(url_for('egresos.listar'))
             
         except Exception as e:
             db.session.rollback()
-            flash(f'Error al registrar el gasto: {str(e)}', 'danger')
+            flash(f'Error al registrar el egreso: {str(e)}', 'danger')
             return render_template('egreso_form.html', action='crear')
     
     return render_template('egreso_form.html', action='crear', producto_reabastecer=producto_reabastecer)
@@ -175,12 +175,12 @@ def editar_egreso(id):
                 return render_template('egreso_form.html', egreso=egreso, action='editar')
             
             db.session.commit()
-            flash('Gasto actualizado exitosamente.', 'success')
+            flash('Egreso actualizado exitosamente.', 'success')
             return redirect(url_for('egresos.listar'))
             
         except Exception as e:
             db.session.rollback()
-            flash(f'Error al actualizar el gasto: {str(e)}', 'danger')
+            flash(f'Error al actualizar el egreso: {str(e)}', 'danger')
             return render_template('egreso_form.html', egreso=egreso, action='editar')
     
     return render_template('egreso_form.html', egreso=egreso, action='editar')
@@ -195,7 +195,7 @@ def eliminar_egreso(id):
         # RN-07: Eliminación lógica en lugar de física
         egreso.activo = False
         db.session.commit()
-        flash('Gasto desactivado exitosamente.', 'success')
+        flash('Egreso desactivado exitosamente.', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f'Error al eliminar el gasto: {str(e)}', 'danger')

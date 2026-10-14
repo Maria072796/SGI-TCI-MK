@@ -44,7 +44,7 @@
                             <p class="total-mk">{{ cierre.total_ventas|moneda }}</p>
                         </div>
                         <div class="col-md-6">
-                            <p class="h5">Capital de reinversión</p>
+                            <p class="h5">Total Costos</p>
                             <p class="total-mk">{{ cierre.total_costos|moneda }}</p>
                         </div>
                     </div>
@@ -52,7 +52,7 @@
                     {% if cierre.tipo == 'dia' %}
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <p class="h5">Total de Gastos</p>
+                            <p class="h5">Total de Egresos</p>
                             <p class="total-mk">{{ cierre.total_egresos|moneda }}</p>
                         </div>
                         <div class="col-md-6">
@@ -71,7 +71,7 @@
 
                     <div class="alert alert-info">
                         <small>
-                            <strong>Fórmula de Utilidad Real:</strong> Ventas − Costo de productos − Gastos
+                            <strong>Fórmula de Utilidad Real:</strong> Ventas − Costo de productos − Egresos
                         </small>
                     </div>
 

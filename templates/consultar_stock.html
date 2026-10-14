@@ -36,16 +36,8 @@
                             <th>ID</th>
                             <th>Nombre</th>
                             <th>Descripción</th>
-                            {% if current_user.rol == 'administrador' %}
-                            <th>Precio Costo</th>
-                            {% endif %}
-                            <th>Precio Venta</th>
                             <th>Stock Actual</th>
-                            {% if current_user.rol == 'administrador' %}
                             <th>Stock Mínimo</th>
-                            <th>Valor Total</th>
-                            {% endif %}
-                            <th>Estado</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -54,26 +46,12 @@
                             <td>{{ producto.id }}</td>
                             <td>{{ producto.nombre }}</td>
                             <td>{{ producto.descripcion|truncate(50) if producto.descripcion else '-' }}</td>
-                            {% if current_user.rol == 'administrador' %}
-                            <td class="text-right">{{ producto.precio_costo|moneda }}</td>
-                            {% endif %}
-                            <td class="text-right">{{ producto.precio_venta|moneda }}</td>
                             <td class="text-right">
                                 <span class="{% if producto.stock_actual <= producto.stock_minimo %}text-danger{% endif %}">
                                     {{ producto.stock_actual }}
                                 </span>
                             </td>
-                            {% if current_user.rol == 'administrador' %}
                             <td class="text-right">{{ producto.stock_minimo }}</td>
-                            <td class="text-right">{{ (producto.stock_actual * producto.precio_costo)|moneda }}</td>
-                            {% endif %}
-                            <td>
-                                {% if producto.activo %}
-                                    <span class="badge bg-success">Activo</span>
-                                {% else %}
-                                    <span class="badge bg-secondary">Inactivo</span>
-                                {% endif %}
-                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>

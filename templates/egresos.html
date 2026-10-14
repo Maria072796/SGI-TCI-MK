@@ -1,21 +1,21 @@
 {% extends "base.html" %}
 
-{% block title %}Gastos - SGI-TCI MK{% endblock %}
+{% block title %}Egresos - SGI-TCI MK{% endblock %}
 
 {% block content %}
 <div class="container-fluid p-0">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ url_for('auth.dashboard') }}">Inicio</a></li>
-            <li class="breadcrumb-item active">Gastos</li>
+            <li class="breadcrumb-item active">Egresos</li>
         </ol>
     </nav>
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Gastos</h2>
+        <h2>Egresos</h2>
         <a href="{{ url_for('egresos.crear_egreso') }}" class="btn btn-primary">
             <i class="bi bi-cash-plus me-2"></i>
-            Registrar gasto
+            Registrar egreso
         </a>
     </div>
 
@@ -67,11 +67,11 @@
             <div class="mb-3">
                 <i class="bi bi-cash-stack" style="font-size: 3rem; color: var(--mk-pizarra);"></i>
             </div>
-            <h4 class="mb-3">No hay gastos registrados</h4>
-            <p class="text-muted mb-4">Comienza registrando el primer gasto del negocio</p>
+            <h4 class="mb-3">No hay egresos registrados</h4>
+            <p class="text-muted mb-4">Comienza registrando el primer egreso del negocio</p>
             <a href="{{ url_for('egresos.crear_egreso') }}" class="btn btn-primary">
                 <i class="bi bi-cash-plus me-2"></i>
-                Registrar primer gasto
+                Registrar primer egreso
             </a>
         </div>
     </div>
@@ -84,12 +84,12 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Eliminar Gasto</h5>
+                <h5 class="modal-title">Eliminar Egreso</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>¿Eliminar el gasto <strong>{{ egreso.descripcion }}</strong>?</p>
-                <p class="text-muted">El gasto ya no aparecerá en el listado pero se mantendrá en el historial financiero.</p>
+                <p>¿Eliminar el egreso <strong>{{ egreso.descripcion }}</strong>?</p>
+                <p class="text-muted">El egreso ya no aparecerá en el listado pero se mantendrá en el historial financiero.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
