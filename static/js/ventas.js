@@ -3,6 +3,16 @@
 let productosCarrito = [];
 let productosDisponibles = [];
 
+// Función para formatear moneda colombiana sin decimales
+function formatearMoneda(valor) {
+    return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(valor);
+}
+
 // Error handler global para capturar errores de JavaScript
 window.onerror = function(message, source, lineno, colno, error) {
     console.error('Error global de JavaScript:', message, 'en', source, 'línea', lineno);
@@ -116,18 +126,18 @@ function actualizarCarrito() {
         fila.innerHTML = `
             <div class="flex-grow-1">
                 <strong>${producto.nombre}</strong>
-                <div class="small text-muted">$${producto.precio_unitario.toFixed(2)} c/u - Stock: ${producto.stock_disponible}</div>
+                <div class="small text-muted">${formatearMoneda(producto.precio_unitario)} c/u - Stock: ${producto.stock_disponible}</div>
                 ${advertenciaHTML}
             </div>
             <div class="d-flex align-items-center">
                 <button type="button" class="btn btn-sm btn-outline-secondary" onclick="cambiarCantidad(${index}, -1)">-</button>
-                <input type="number" class="form-control form-control-sm mx-2 cantidad-input" style="width: 60px" 
+                <input type="number" class="form-control form-control-sm mx-2 cantidad-input" style="width: 60px"
                        value="${producto.cantidad}" min="1" max="${producto.stock_disponible}"
                        onchange="cambiarCantidadManual(${index}, this.value)">
                 <button type="button" class="btn btn-sm btn-outline-secondary" onclick="cambiarCantidad(${index}, 1)">+</button>
             </div>
             <div class="text-end ms-3" style="min-width: 80px">
-                <strong>$${producto.subtotal.toFixed(2)}</strong>
+                <strong>${formatearMoneda(producto.subtotal)}</strong>
             </div>
             <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="eliminarProducto(${index})">
                 <i class="bi bi-trash"></i>
@@ -241,7 +251,7 @@ function actualizarTotales() {
     const productosCount = productosCarrito.length;
     const unidadesCount = productosCarrito.reduce((sum, p) => sum + p.cantidad, 0);
     
-    totalElement.textContent = `$${total.toFixed(2)}`;
+    totalElement.textContent = formatearMoneda(total);
     
     if (productosCountElement) {
         productosCountElement.textContent = productosCount;

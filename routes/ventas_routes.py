@@ -4,7 +4,7 @@ from models import db, Producto, Venta, DetalleVenta, CierreCaja
 from datetime import datetime, date
 from decimal import Decimal
 from sqlalchemy import func
-from utils.formato import hoy_colombia, ahora_colombia
+from utils.formato import hoy_colombia, ahora_colombia, formatear_moneda
 
 ventas_bp = Blueprint('ventas', __name__, url_prefix='/ventas')
 
@@ -141,7 +141,7 @@ def crear():
             
             db.session.commit()
             
-            flash(f'Registramos la venta #{venta.id} por ${total:.2f}', 'success')
+            flash(f'Registramos la venta #{venta.id} por {formatear_moneda(total)}', 'success')
             return redirect(url_for('ventas.detalle', id=venta.id))
             
         except Exception as e:

@@ -6,7 +6,7 @@ from decimal import Decimal
 from sqlalchemy import func
 from utils.seguridad import rol_requerido
 from utils.finanzas import valor_inventario_total, productos_bajo_stock, egresos_del_periodo
-from utils.formato import hoy_colombia, ahora_colombia
+from utils.formato import hoy_colombia, ahora_colombia, formatear_moneda
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
@@ -15,6 +15,11 @@ from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 
 reportes_bp = Blueprint('reportes', __name__, url_prefix='/reportes')
+
+def formatear_moneda_pdf(valor):
+    """Formatea moneda para PDF sin decimales."""
+    valor_redondeado = round(float(valor))
+    return f"${valor_redondeado:,.0f}".replace(",", ".")
 
 # Pantalla intermedia de reportes
 @reportes_bp.route('/')
@@ -363,10 +368,10 @@ def reporte_financiero_pdf():
     # Resumen de métricas
     resumen_data = [
         ['Métrica', 'Monto'],
-        ['Total Ingresos', f'${total_ventas:,.2f}'],
-        ['Total Costos', f'${total_costos:,.2f}'],
-        ['Total Egresos', f'${total_egresos:,.2f}'],
-        ['Utilidad', f'${utilidad_real:,.2f}']
+        ['Total Ingresos', formatear_moneda_pdf(total_ventas)],
+        ['Total Costos', formatear_moneda_pdf(total_costos)],
+        ['Total Egresos', formatear_moneda_pdf(total_egresos)],
+        ['Utilidad', formatear_moneda_pdf(utilidad_real)]
     ]
     
     resumen_table = Table(resumen_data, colWidths=[3*inch, 2*inch])
@@ -381,8 +386,8 @@ def reporte_financiero_pdf():
         ('TEXTCOLOR', (0, 1), (1, 1), colors.HexColor('#1A3A4A')),
         ('BACKGROUND', (0, 2), (1, 2), colors.HexColor('#E8A0A0')),
         ('TEXTCOLOR', (0, 2), (1, 2), colors.HexColor('#5C1F1F')),
-        ('BACKGROUND', (0, 3), (1, 3), colors.HexColor('#C4B0D9')),
-        ('TEXTCOLOR', (0, 3), (1, 3), colors.HexColor('#3D2B52')),
+        ('BACKGROUND', (0, 3), (1, 3), colors.HexColor('#A0AEB8')),
+        ('TEXTCOLOR', (0, 3), (1, 3), colors.HexColor('#1A3A4A')),
         ('BACKGROUND', (0, 4), (1, 4), colors.HexColor('#6A9EC4')),
         ('TEXTCOLOR', (0, 4), (1, 4), colors.HexColor('#0A2A3A')),
         ('GRID', (0, 0), (1, -1), 1, colors.black)
@@ -402,7 +407,7 @@ def reporte_financiero_pdf():
                 str(venta.id),
                 venta.fecha_hora.strftime('%d/%m/%Y %H:%M'),
                 venta.usuario.nombre_completo or venta.usuario.username,
-                f'${venta.total:,.2f}'
+                formatear_moneda_pdf(venta.total)
             ])
         
         ventas_table = Table(ventas_data, colWidths=[0.5*inch, 1.5*inch, 2*inch, 1*inch])
@@ -436,7 +441,7 @@ def reporte_financiero_pdf():
                 str(egreso.id),
                 egreso.fecha_hora.strftime('%d/%m/%Y %H:%M'),
                 egreso.descripcion,
-                f'${egreso.monto:,.2f}'
+                formatear_moneda_pdf(egreso.monto)
             ])
         
         egresos_table = Table(egresos_data, colWidths=[0.5*inch, 1.5*inch, 2*inch, 1*inch])
@@ -466,10 +471,10 @@ def reporte_financiero_pdf():
     resumen_financiero_data = [
         ['Concepto', 'Monto'],
         ['Período', f'{fecha_inicio.strftime("%d/%m/%Y")} - {fecha_fin.strftime("%d/%m/%Y")}'],
-        ['Total Ingresos', f'${total_ventas:,.2f}'],
-        ['Total Costos', f'${total_costos:,.2f}'],
-        ['Total Egresos', f'${total_egresos:,.2f}'],
-        ['Utilidad', f'${utilidad_real:,.2f}']
+        ['Total Ingresos', formatear_moneda_pdf(total_ventas)],
+        ['Total Costos', formatear_moneda_pdf(total_costos)],
+        ['Total Egresos', formatear_moneda_pdf(total_egresos)],
+        ['Utilidad', formatear_moneda_pdf(utilidad_real)]
     ]
     
     resumen_financiero_table = Table(resumen_financiero_data, colWidths=[2.5*inch, 2*inch])
@@ -632,7 +637,7 @@ def reporte_inventario_pdf():
         ['Métrica', 'Valor'],
         ['Total Productos', str(total_productos)],
         ['Productos con Stock Bajo', str(total_stock_bajo)],
-        ['Valor Total del Inventario', f'${valor_total_inventario:,.2f}']
+        ['Valor Total del Inventario', formatear_moneda_pdf(valor_total_inventario)]
     ]
     
     resumen_table = Table(resumen_data, colWidths=[3*inch, 2*inch])
@@ -665,11 +670,11 @@ def reporte_inventario_pdf():
                 str(prod.id),
                 prod.nombre,
                 (prod.descripcion[:50] + '...') if prod.descripcion and len(prod.descripcion) > 50 else (prod.descripcion or '-'),
-                f'${prod.precio_costo:,.2f}',
-                f'${prod.precio_venta:,.2f}',
+                formatear_moneda_pdf(prod.precio_costo),
+                formatear_moneda_pdf(prod.precio_venta),
                 str(prod.stock_actual),
                 str(prod.stock_minimo),
-                f'${item["valor_total"]:,.2f}',
+                formatear_moneda_pdf(item["valor_total"]),
                 estado
             ])
         

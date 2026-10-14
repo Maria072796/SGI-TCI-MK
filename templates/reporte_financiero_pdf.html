@@ -187,24 +187,24 @@
     <div class="resumen-cards">
         <div class="card card-success">
             <h3>Total Ingresos</h3>
-            <p class="amount">${{ "{:,.2f}".format(total_ventas) }}</p>
+            <p class="amount">${{ "{:,.0f}".format(total_ventas) }}</p>
             <p class="count">{{ ventas|length }} ventas</p>
         </div>
-        
+
         <div class="card card-danger">
             <h3>Total Costos</h3>
-            <p class="amount">${{ "{:,.2f}".format(total_costos) }}</p>
+            <p class="amount">${{ "{:,.0f}".format(total_costos) }}</p>
         </div>
-        
+
         <div class="card card-warning">
             <h3>Total Egresos</h3>
-            <p class="amount">${{ "{:,.2f}".format(total_egresos) }}</p>
+            <p class="amount">${{ "{:,.0f}".format(total_egresos) }}</p>
             <p class="count">{{ egresos|length }} egresos</p>
         </div>
-        
+
         <div class="card card-primary">
             <h3>Utilidad Real</h3>
-            <p class="amount">${{ "{:,.2f}".format(utilidad_real) }}</p>
+            <p class="amount">${{ "{:,.0f}".format(utilidad_real) }}</p>
         </div>
     </div>
     
@@ -226,7 +226,7 @@
                             <td>{{ venta.id }}</td>
                             <td>{{ venta.fecha_hora.strftime('%d/%m/%Y %H:%M') }}</td>
                             <td>{{ venta.usuario.nombre_completo or venta.usuario.username }}</td>
-                            <td>${{ "{:,.2f}".format(venta.total) }}</td>
+                            <td>${{ "{:,.0f}".format(venta.total) }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -254,7 +254,7 @@
                             <td>{{ egreso.id }}</td>
                             <td>{{ egreso.fecha_hora.strftime('%d/%m/%Y %H:%M') }}</td>
                             <td>{{ egreso.descripcion }}</td>
-                            <td>${{ "{:,.2f}".format(egreso.monto) }}</td>
+                            <td>${{ "{:,.0f}".format(egreso.monto) }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -273,19 +273,19 @@
             </tr>
             <tr>
                 <td><strong>Total Ingresos:</strong></td>
-                <td>${{ "{:,.2f}".format(total_ventas) }}</td>
+                <td>${{ "{:,.0f}".format(total_ventas) }}</td>
             </tr>
             <tr>
                 <td><strong>Total Costos:</strong></td>
-                <td>${{ "{:,.2f}".format(total_costos) }}</td>
+                <td>${{ "{:,.0f}".format(total_costos) }}</td>
             </tr>
             <tr>
                 <td><strong>Total Egresos:</strong></td>
-                <td>${{ "{:,.2f}".format(total_egresos) }}</td>
+                <td>${{ "{:,.0f}".format(total_egresos) }}</td>
             </tr>
             <tr>
                 <td><strong>Utilidad Real:</strong></td>
-                <td>${{ "{:,.2f}".format(utilidad_real) }}</td>
+                <td>${{ "{:,.0f}".format(utilidad_real) }}</td>
             </tr>
         </table>
         
