@@ -3,6 +3,7 @@ from flask import abort, flash, redirect, url_for, session
 from flask_login import current_user
 from datetime import datetime, timedelta
 import re
+from utils.formato import ahora_colombia
 
 def validar_password(password):
     """
@@ -35,8 +36,8 @@ def password_vencida(usuario):
     """
     if not usuario.fecha_cambio_password:
         return (False, 180)
-    
-    dias_pasados = (datetime.now() - usuario.fecha_cambio_password).days
+
+    dias_pasados = (ahora_colombia() - usuario.fecha_cambio_password).days
     vencida = dias_pasados >= 180
     dias_restantes = 180 - dias_pasados
     

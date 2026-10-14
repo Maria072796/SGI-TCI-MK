@@ -4,6 +4,7 @@ from models import db, Producto, Venta, DetalleVenta, CierreCaja
 from datetime import datetime, date
 from decimal import Decimal
 from sqlalchemy import func
+from utils.formato import hoy_colombia, ahora_colombia
 
 ventas_bp = Blueprint('ventas', __name__, url_prefix='/ventas')
 
@@ -15,12 +16,12 @@ def listar():
     
     # Aplicar filtro de fecha
     if filtro == 'hoy':
-        fecha_inicio = datetime.now().date()
-        fecha_fin = datetime.now().date()
+        fecha_inicio = hoy_colombia()
+        fecha_fin = hoy_colombia()
     elif filtro == 'semana':
         from datetime import timedelta
-        fecha_inicio = datetime.now().date() - timedelta(days=7)
-        fecha_fin = datetime.now().date()
+        fecha_inicio = hoy_colombia() - timedelta(days=7)
+        fecha_fin = hoy_colombia()
     else:  # 'todas'
         fecha_inicio = None
         fecha_fin = None
@@ -195,7 +196,7 @@ def anular(id):
         
         # RN-08: Cambiar estado y registrar información de anulación
         venta.estado = 'anulada'
-        venta.fecha_anulacion = datetime.now()
+        venta.fecha_anulacion = ahora_colombia()
         venta.anulada_por = current_user.id
         venta.motivo_anulacion = motivo
         

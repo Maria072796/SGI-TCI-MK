@@ -6,6 +6,7 @@ from decimal import Decimal
 from sqlalchemy import func
 from utils.seguridad import rol_requerido
 from utils.finanzas import valor_inventario_total, productos_bajo_stock, egresos_del_periodo
+from utils.formato import hoy_colombia, ahora_colombia
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
@@ -30,8 +31,8 @@ def utilidad_diaria():
     if fecha_str:
         fecha = datetime.strptime(fecha_str, '%Y-%m-%d').date()
     else:
-        fecha = date.today()
-    
+        fecha = hoy_colombia()
+
     # Calcular ventas del día
     ventas_dia = Venta.query.filter(
         Venta.estado == 'confirmada',
@@ -69,8 +70,8 @@ def cierre_caja():
     if fecha_str:
         fecha = datetime.strptime(fecha_str, '%Y-%m-%d').date()
     else:
-        fecha = date.today()
-    
+        fecha = hoy_colombia()
+
     if request.method == 'POST':
         observaciones = request.form.get('observaciones')
         
@@ -254,14 +255,15 @@ def historial_cierres():
 def reporte_financiero():
     fecha_inicio_str = request.args.get('fecha_inicio')
     fecha_fin_str = request.args.get('fecha_fin')
-    
+
     if fecha_inicio_str and fecha_fin_str:
         fecha_inicio = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
         fecha_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date()
     else:
-        fecha_inicio = date.today().replace(day=1)  # Primer día del mes actual
-        fecha_fin = date.today()
-    
+        hoy = hoy_colombia()
+        fecha_inicio = hoy.replace(day=1)  # Primer día del mes actual
+        fecha_fin = hoy
+
     # Calcular ventas en el período
     ventas_periodo = Venta.query.filter(
         Venta.estado == 'confirmada',
@@ -299,14 +301,15 @@ def reporte_financiero():
 def reporte_financiero_pdf():
     fecha_inicio_str = request.args.get('fecha_inicio')
     fecha_fin_str = request.args.get('fecha_fin')
-    
+
     if fecha_inicio_str and fecha_fin_str:
         fecha_inicio = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
         fecha_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date()
     else:
-        fecha_inicio = date.today().replace(day=1)  # Primer día del mes actual
-        fecha_fin = date.today()
-    
+        hoy = hoy_colombia()
+        fecha_inicio = hoy.replace(day=1)  # Primer día del mes actual
+        fecha_fin = hoy
+
     # Calcular ventas en el período
     ventas_periodo = Venta.query.filter(
         Venta.estado == 'confirmada',
@@ -525,7 +528,7 @@ def reporte_financiero_pdf():
     
     # Footer
     elements.append(Spacer(1, 0.5*inch))
-    footer_text = f"Reporte generado el {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}"
+    footer_text = f"Reporte generado el {ahora_colombia().strftime('%d/%m/%Y %H:%M:%S')}"
     footer = Paragraph(footer_text, styles['Normal'])
     elements.append(footer)
     
@@ -599,7 +602,7 @@ def reporte_inventario_pdf():
     # Crear PDF
     response = make_response()
     response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = f'attachment; filename=reporte_inventario_{datetime.now().strftime("%Y%m%d")}.pdf'
+    response.headers['Content-Disposition'] = f'attachment; filename=reporte_inventario_{ahora_colombia().strftime("%Y%m%d")}.pdf'
     
     # Crear buffer para el PDF
     from io import BytesIO
@@ -689,7 +692,7 @@ def reporte_inventario_pdf():
     
     # Footer
     elements.append(Spacer(1, 0.5*inch))
-    footer_text = f"Reporte generado el {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}"
+    footer_text = f"Reporte generado el {ahora_colombia().strftime('%d/%m/%Y %H:%M:%S')}"
     footer = Paragraph(footer_text, styles['Normal'])
     elements.append(footer)
     

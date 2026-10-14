@@ -4,6 +4,7 @@ from models import db, Usuario
 from datetime import datetime, timedelta
 from sqlalchemy import func
 from utils.seguridad import validar_password, password_vencida, password_pronto_vencer, rol_requerido
+from utils.formato import hoy_colombia
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -68,13 +69,13 @@ def dashboard():
         ventas_hoy = Venta.query.filter(
             Venta.estado == 'confirmada',
             Venta.usuario_id == current_user.id,
-            func.date(Venta.fecha_hora) == datetime.now().date()
+            func.date(Venta.fecha_hora) == hoy_colombia()
         ).count()
-        
+
         total_vendido_hoy = db.session.query(func.sum(Venta.total)).filter(
             Venta.estado == 'confirmada',
             Venta.usuario_id == current_user.id,
-            func.date(Venta.fecha_hora) == datetime.now().date()
+            func.date(Venta.fecha_hora) == hoy_colombia()
         ).scalar() or 0
         
         # Agregar productos disponibles para vendedor
@@ -113,7 +114,7 @@ def dashboard():
         
         ventas_hoy = Venta.query.filter(
             Venta.estado == 'confirmada',
-            func.date(Venta.fecha_hora) == datetime.now().date()
+            func.date(Venta.fecha_hora) == hoy_colombia()
         ).count()
         
         # Total de usuarios por rol
